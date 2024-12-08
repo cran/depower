@@ -1,0 +1,25 @@
+vers <- meta$Version
+if(is.null(vers)) {
+  vers <- packageVersion("depower")
+}
+year <- strtrim(vers, 4)
+note <- paste0("R package version ", vers)
+
+bibentry(
+  bibtype = "Manual",
+  author = c(
+    person(given = c("Brett", "G."), family = "Klamer"),
+    person(given = "Lianbo", family = "Yu")
+  ),
+  title = "depower: Power Analysis for Differential Expression Studies",
+  year = year,
+  note = vers,
+  url = "https://cran.r-project.org/package=depower",
+  header = "To cite depower in publications, please use:",
+  textVersion = paste0(
+    "Klamer, B. G., & Yu, L. (", year, "). ",
+    "depower: Power Analysis for Differential Expression Studies. ",
+    note, ". ",
+    "https://cran.r-project.org/package=depower"
+  )
+)
