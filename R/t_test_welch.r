@@ -106,8 +106,8 @@
 #'   4 \tab 2 \tab `lower`     \tab Confidence interval lower bound. \cr
 #'   4 \tab 3 \tab `upper`     \tab Confidence interval upper bound. \cr
 #'
-#'   5 \tab   \tab `mean_1` \tab Estimated mean of group 1. \cr
-#'   6 \tab   \tab `mean_2` \tab Estimated mean of group 2. \cr
+#'   5 \tab   \tab `mean1` \tab Estimated mean of group 1. \cr
+#'   6 \tab   \tab `mean2` \tab Estimated mean of group 2. \cr
 #'   7 \tab   \tab `n1` \tab Sample size of group 1. \cr
 #'   8 \tab   \tab `n2` \tab Sample size of group 2. \cr
 #'   9  \tab   \tab `method`      \tab Method used for the results. \cr

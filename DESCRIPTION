@@ -1,6 +1,6 @@
 Package: depower
 Title: Power Analysis for Differential Expression Studies
-Version: 2024.12.4
+Version: 2025.1.20
 Authors@R: c(
     person(
       given = "Brett", 
@@ -36,9 +36,9 @@ Language: en-US
 Encoding: UTF-8
 RoxygenNote: 7.3.2
 NeedsCompilation: no
-Packaged: 2024-12-05 04:48:07 UTC; x
+Packaged: 2025-01-21 00:00:00 UTC; x
 Author: Brett Klamer [aut, cre] (<https://orcid.org/0000-0002-8334-4831>),
   Lianbo Yu [aut] (<https://orcid.org/0000-0002-2025-2585>)
 Maintainer: Brett Klamer <code@brettklamer.com>
 Repository: CRAN
-Date/Publication: 2024-12-08 21:50:02 UTC
+Date/Publication: 2025-01-23 09:50:02 UTC

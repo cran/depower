@@ -71,7 +71,7 @@
 #' A list with the following elements:
 #' \tabular{llll}{
 #'   Slot \tab Subslot \tab Name \tab Description \cr
-#'   1 \tab \tab `chisq` \tab Asymptotic \eqn{\chi^2} test statistic for the ratio of means. \cr
+#'   1 \tab \tab `chisq` \tab \eqn{\chi^2} test statistic for the ratio of means. \cr
 #'   2 \tab \tab `df`    \tab Degrees of freedom. \cr
 #'   3 \tab \tab `p`     \tab p-value. \cr
 #'   4 \tab \tab `ratio` \tab Estimated ratio of means (sample 2 / sample 1). \cr

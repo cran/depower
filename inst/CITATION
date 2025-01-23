@@ -15,6 +15,7 @@ bibentry(
   year = year,
   note = vers,
   url = "https://cran.r-project.org/package=depower",
+  key= "depower",
   header = "To cite depower in publications, please use:",
   textVersion = paste0(
     "Klamer, B. G., & Yu, L. (", year, "). ",

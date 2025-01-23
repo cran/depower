@@ -29,7 +29,9 @@ expect_equal(
     ), label = "Test"), alpha = structure(c(0.05, 0.05), label = "Alpha"),
     power = structure(c(0.312, 0.772), label = "Power")), row.names = c(NA,
 -2L), class = c("depower", "log_lognormal_independent_two_sample",
-"tbl_df", "tbl", "data.frame"))
+"tbl_df", "tbl", "data.frame")),
+  tolerance = 0.01,
+  scale = 1
 )
 
 # Dependent two-sample t-Test
@@ -58,7 +60,9 @@ expect_equal(
     ), label = "Test"), alpha = structure(c(0.05, 0.05), label = "Alpha"),
     power = structure(c(0.535, 0.957), label = "Power")), row.names = c(NA,
 -2L), class = c("depower", "log_lognormal_dependent_two_sample",
-"tbl_df", "tbl", "data.frame"))
+"tbl_df", "tbl", "data.frame")),
+  tolerance = 0.01,
+  scale = 1
 )
 
 # Mixed-type two-sample t-Test
@@ -90,7 +94,9 @@ expect_equal(
     ), label = "Test"), alpha = structure(c(0.05, 0.05, 0.05,
     0.05), label = "Alpha"), power = structure(c(0.312, 0.772,
     0.54, 0.963), label = "Power")), row.names = c(NA, -4L), class = c("depower",
-"log_lognormal_mixed_two_sample", "tbl_df", "tbl", "data.frame"))
+"log_lognormal_mixed_two_sample", "tbl_df", "tbl", "data.frame")),
+  tolerance = 0.01,
+  scale = 1
 )
 
 # One-sample t-Test
@@ -113,7 +119,9 @@ expect_equal(
     `t_test_paired()` = "One-sample t-Test"), label = "Test"),
     alpha = structure(c(0.05, 0.05), label = "Alpha"), power = structure(c(0.515,
     0.958), label = "Power")), row.names = c(NA, -2L), class = c("depower",
-"log_lognormal_one_sample", "tbl_df", "tbl", "data.frame"))
+"log_lognormal_one_sample", "tbl_df", "tbl", "data.frame")),
+  tolerance = 0.01,
+  scale = 1
 )
 
 # NB test
@@ -141,10 +149,14 @@ expect_equal(
     `wald_test_nb()` = "NB Wald test"), label = "Test"), alpha = structure(c(0.05,
     0.05), label = "Alpha"), power = structure(c(0.315, 0.545
     ), label = "Power")), row.names = c(NA, -2L), class = c("depower",
-"nb", "tbl_df", "tbl", "data.frame"))
+"nb", "tbl_df", "tbl", "data.frame")),
+  tolerance = 0.01,
+  scale = 1
 )
 
 # BNB test
+# 2024-12-09 CRAN test failed with ATLAS BLAS. Add tolerance to allow varying
+# numerical precision.
 set.seed(1234)
 d <- sim_bnb(
   n = 10,
@@ -167,7 +179,9 @@ expect_equal(
     `wald_test_bnb()` = "BNB Wald test"), label = "Test"), alpha = structure(c(0.05,
     0.05), label = "Alpha"), power = structure(c(0.86, 0.97), label = "Power")), row.names = c(NA,
 -2L), class = c("depower", "bnb", "tbl_df", "tbl", "data.frame"
-))
+)),
+  tolerance = 0.01,
+  scale = 1
 )
 
 #-------------------------------------------------------------------------------

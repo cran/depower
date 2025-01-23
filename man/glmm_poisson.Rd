@@ -35,7 +35,7 @@ A list with the following elements:
 \tabular{llll}{
 Slot \tab Subslot \tab Name \tab Description \cr
 
-1 \tab \tab \code{chisq} \tab Asymptotic \eqn{\chi^2} test statistic for the ratio of means. \cr
+1 \tab \tab \code{chisq} \tab \eqn{\chi^2} test statistic for the ratio of means. \cr
 2 \tab \tab \code{df}    \tab Degrees of freedom. \cr
 3 \tab \tab \code{p}     \tab p-value. \cr
 

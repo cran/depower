@@ -1,3 +1,8 @@
+# depower 2025.1.20
+
+- Fix typos in documentation.
+- Fix test error resulting from ATLAS numerical differences.
+
 # depower 2024.12.4
 
 First release to CRAN.

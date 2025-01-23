@@ -39,8 +39,8 @@ Slot \tab Subslot \tab Name \tab Description \cr
 4 \tab 2 \tab \code{lower}     \tab Confidence interval lower bound. \cr
 4 \tab 3 \tab \code{upper}     \tab Confidence interval upper bound. \cr
 
-5 \tab   \tab \code{mean_1} \tab Estimated mean of group 1. \cr
-6 \tab   \tab \code{mean_2} \tab Estimated mean of group 2. \cr
+5 \tab   \tab \code{mean1} \tab Estimated mean of group 1. \cr
+6 \tab   \tab \code{mean2} \tab Estimated mean of group 2. \cr
 7 \tab   \tab \code{n1} \tab Sample size of group 1. \cr
 8 \tab   \tab \code{n2} \tab Sample size of group 2. \cr
 9  \tab   \tab \code{method}      \tab Method used for the results. \cr
