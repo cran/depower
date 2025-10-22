@@ -11,25 +11,22 @@ nll_nb_null(param, value1, value2, equal_dispersion, ratio_null)
 nll_nb_alt(param, value1, value2, equal_dispersion)
 }
 \arguments{
-\item{param}{(numeric)\cr
-The vector of initial values for NB parameters. Must be in the
-following order for each scenario:
+\item{param}{(numeric: \verb{(0, Inf)})\cr
+A vector of NB parameters. Must be in the following order for each scenario:
 \itemize{
-\item Null and unequal dispersion: \code{c(mean1, dispersion1, dispersion2)}
+\item Null and unequal dispersion: \code{c(mean, dispersion1, dispersion2)}
 \item Alternative and unequal dispersion: \code{c(mean1, mean2, dispersion1, dispersion2)}
-\item Null and equal dispersion: \code{c(mean1, dispersion)}
+\item Null and equal dispersion: \code{c(mean, dispersion)}
 \item Alternative and equal dispersion: \code{c(mean1, mean2, dispersion)}
 }
 
 for groups 1 and 2.}
 
-\item{value1}{(numeric)\cr
-The vector of NB values from group 1. Must not contain
-\link[base]{NA}s.}
+\item{value1}{(integer: \verb{(0, Inf)})\cr
+The vector of NB values from group 1. Must not contain \link[base]{NA}s.}
 
-\item{value2}{(numeric)\cr
-The vector of NB values from group 2. Must not contain
-\link[base]{NA}s.}
+\item{value2}{(integer: \verb{(0, Inf)})\cr
+The vector of NB values from group 2. Must not contain \link[base]{NA}s.}
 
 \item{equal_dispersion}{(Scalar logical)\cr
 If \code{TRUE}, the log-likelihood is calculated assuming both groups have
@@ -48,8 +45,8 @@ The negative log-likelihood for two independent samples of negative binomial
 distributions.
 }
 \details{
-These functions are primarily designed for speed in simulation. Arguments are
-not checked.
+These functions are primarily designed for speed in simulation. Limited
+argument validation is performed.
 
 Suppose \eqn{X_1 \sim \text{NB}(\mu, \theta_1)} and
 \eqn{X_2 \sim \text{NB}(r\mu, \theta_2)} where \eqn{X_1} and \eqn{X_2} are
@@ -80,8 +77,8 @@ l(r, \mu, \theta_1, \theta_2) = \ &n_1 \left[ \theta_1 \ln \theta_1 - \ln \Gamma
   &n_2 \left[ \theta_2 \ln \theta_2 - \ln \Gamma(\theta_2) \right] + \\
   &(n_1 \bar{x}_1 + n_2 \bar{x}_2) \ln(\mu) - n_1 (\bar{x}_1 + \theta_1) \ln(\mu + \theta_1) + \\
   &n_2 \bar{x}_2 \ln(r) - n_2 (\bar{x}_2 + \theta_2) \ln(r \mu + \theta_2) + \\
-  &\sum_{i = 1}^{n_1}{\left( \ln \Gamma(y_{1i} + \theta_1) - \ln(y_{1i}!) \right)} + \\
-  &\sum_{j = 1}^{n_2}{\left( \ln \Gamma(y_{2j} + \theta_2) - \ln(y_{2j}!) \right)}
+  &\sum_{i = 1}^{n_1}{\left( \ln \Gamma(x_{1i} + \theta_1) - \ln(x_{1i}!) \right)} + \\
+  &\sum_{j = 1}^{n_2}{\left( \ln \Gamma(x_{2j} + \theta_2) - \ln(x_{2j}!) \right)}
 \end{aligned}
 }
 }
@@ -107,8 +104,8 @@ The log-likelihood is
 l(r, \mu, \theta) = \ &(n_1 + n_2) \left[ \theta \ln \theta - \ln \Gamma(\theta) \right] + \\
   &(n_1 \bar{x}_1 + n_2 \bar{x}_2) \ln(\mu) - n_1 (\bar{x}_1 + \theta) \ln(\mu + \theta) + \\
   &n_2 \bar{x}_2 \ln(r) - n_2 (\bar{x}_2 + \theta) \ln(r \mu + \theta) + \\
-  &\sum_{i = 1}^{n_1}{\left( \ln \Gamma(y_{1i} + \theta) - \ln(y_{1i}!) \right)} + \\
-  &\sum_{j = 1}^{n_2}{\left( \ln \Gamma(y_{2j} + \theta) - \ln(y_{2j}!) \right)}
+  &\sum_{i = 1}^{n_1}{\left( \ln \Gamma(x_{1i} + \theta) - \ln(x_{1i}!) \right)} + \\
+  &\sum_{j = 1}^{n_2}{\left( \ln \Gamma(x_{2j} + \theta) - \ln(x_{2j}!) \right)}
 \end{aligned}
 }
 }
@@ -130,14 +127,14 @@ d <- sim_nb(
 )
 
 nll_nb_alt(
-  param = c(mean1 = 10, mean2 = 15, dispersion = 2, dispersion2 = 8),
+  param = c(mean1 = 10, mean2 = 15, dispersion1 = 2, dispersion2 = 8),
   value1 = d[[1L]],
   value2 = d[[2L]],
   equal_dispersion = FALSE
 )
 
 nll_nb_null(
-  param = c(mean = 10, dispersion = 2, dispersion2 = 8),
+  param = c(mean = 10, dispersion1 = 2, dispersion2 = 8),
   value1 = d[[1L]],
   value2 = d[[2L]],
   equal_dispersion = FALSE,
@@ -151,6 +148,5 @@ nll_nb_null(
 \insertRef{aban_2009}{depower}
 }
 \seealso{
-\code{\link[=sim_nb]{sim_nb()}}, \code{\link[stats:nlminb]{stats::nlminb()}}, \code{\link[stats:nlm]{stats::nlm()}},
-\code{\link[stats:optim]{stats::optim()}}
+\link{mle_nb}
 }

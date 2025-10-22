@@ -114,7 +114,7 @@
 #'                               under the null hypothesis.
 #' }
 #'
-#' @seealso [stats::t.test()]
+#' @seealso [depower::t_test_welch()]
 #'
 #' @examples
 #' #----------------------------------------------------------------------------
@@ -151,22 +151,22 @@
 #'
 #' @export
 t_test_paired <- function(
-    data,
-    alternative = "two.sided",
-    ci_level = NULL,
-    mean_null = 0
+  data,
+  alternative = "two.sided",
+  ci_level = NULL,
+  mean_null = 0
 ) {
   #-----------------------------------------------------------------------------
   # Check arguments
   #-----------------------------------------------------------------------------
   len <- length(data)
-  if(!is.list(data) || len == 0L || len > 2L) {
+  if (!is.list(data) || len == 0L || len > 2L) {
     stop("Argument 'data' must be a list of length 1 or 2.")
   }
 
   has_ci <- !is.null(ci_level)
-  if(has_ci) {
-    if(!(is.numeric(ci_level) && length(ci_level == 1L))) {
+  if (has_ci) {
+    if (!(is.numeric(ci_level) && length(ci_level) == 1L)) {
       stop("Argument 'ci_level' must be a scalar numeric.")
     }
   } else {
@@ -175,20 +175,20 @@ t_test_paired <- function(
     ci_level <- NA_real_
   }
 
-  if(!(is.numeric(mean_null) && length(mean_null) == 1L)) {
+  if (!(is.numeric(mean_null) && length(mean_null) == 1L)) {
     stop("Argument 'mean_null' must be a scalar numeric.")
   }
 
   #-----------------------------------------------------------------------------
   # t-test
   #-----------------------------------------------------------------------------
-  if(len == 2L) {
+  if (len == 2L) {
     d1 <- data[[1L]]
     d2 <- data[[2L]]
-    if(length(d1) != length(d2)) {
+    if (length(d1) != length(d2)) {
       stop("Argument 'data' must have the same sample size for both samples.")
     }
-    if(anyNA(d1) || anyNA(d2)) {
+    if (anyNA(d1) || anyNA(d2)) {
       not_na <- complete.cases(d1, d2)
       diff <- d2[not_na] - d1[not_na]
     } else {
@@ -196,7 +196,7 @@ t_test_paired <- function(
     }
   } else {
     diff <- data[[1L]]
-    if(anyNA(diff)) {
+    if (anyNA(diff)) {
       diff <- diff[!is.na(diff)]
     }
   }
@@ -208,35 +208,37 @@ t_test_paired <- function(
   stderr <- sqrt(var_diff / n)
   tstat <- (mean_diff - mean_null) / stderr
 
-  if(alternative == "two.sided") {
+  if (alternative == "two.sided") {
     # A bit faster than pt(abs(tstat), df, lower.tail = FALSE)?
     p <- 2 * pt(-abs(tstat), df)
     method <- "One-sample t-test for 'two-sided' alternative"
-    if(has_ci) {
+    if (has_ci) {
       alpha <- 1 - (1 - ci_level) / 2
       crit <- qt(p = alpha, df = df)
       mean_diff_lower <- mean_null + (tstat - crit) * stderr
       mean_diff_upper <- mean_null + (tstat + crit) * stderr
     }
-  } else if(alternative == "greater") {
+  } else if (alternative == "greater") {
     # A bit faster than pt(tstat, df, lower.tail = FALSE)?
     p <- pt(-tstat, df)
     method <- "One-sample t-test for 'greater than' alternative"
-    if(has_ci) {
+    if (has_ci) {
       crit <- qt(p = ci_level, df = df)
       mean_diff_lower <- mean_null + (tstat - crit) * stderr
       mean_diff_upper <- Inf
     }
-  } else if(alternative == "less") {
+  } else if (alternative == "less") {
     p <- pt(tstat, df)
     method <- "One-sample t-test for 'less than' alternative"
-    if(has_ci) {
+    if (has_ci) {
       crit <- qt(p = ci_level, df = df)
       mean_diff_lower <- -Inf
       mean_diff_upper <- mean_null + (tstat + crit) * stderr
     }
   } else {
-    stop("Argument 'alternative' must be one of 'two.sided', 'greater' or 'less'.")
+    stop(
+      "Argument 'alternative' must be one of 'two.sided', 'greater' or 'less'."
+    )
   }
 
   #-----------------------------------------------------------------------------

@@ -52,7 +52,7 @@ power_nb
 plot(power_nb)
 ```
 
-![](man/figures/README-power_nb-1.svg)<!-- -->
+![](man/figures/README-power_nb-1.png)<!-- -->
 
 Estimate power to detect the ratio of means for bivariate negative
 binomial data.
@@ -78,7 +78,7 @@ power_bnb
 plot(power_bnb)
 ```
 
-![](man/figures/README-power_bnb-1.svg)<!-- -->
+![](man/figures/README-power_bnb-1.png)<!-- -->
 
 Estimate power to detect the geometric ratio of means for independent
 two-sample lognormal data.
@@ -105,7 +105,7 @@ power_ind_lognormal
 plot(power_ind_lognormal)
 ```
 
-![](man/figures/README-power_independent_normal-1.svg)<!-- -->
+![](man/figures/README-power_independent_normal-1.png)<!-- -->
 
 Estimate power to detect the geometric mean ratio for dependent
 two-sample lognormal data.
@@ -133,7 +133,7 @@ power_dep_lognormal
 plot(power_dep_lognormal)
 ```
 
-![](man/figures/README-power_dependent_normal-1.svg)<!-- -->
+![](man/figures/README-power_dependent_normal-1.png)<!-- -->
 
 Estimate power to detect the geometric mean for one-sample lognormal
 data.
@@ -158,4 +158,4 @@ power_one_lognormal
 plot(power_one_lognormal)
 ```
 
-![](man/figures/README-power_one_normal-1.svg)<!-- -->
+![](man/figures/README-power_one_normal-1.png)<!-- -->

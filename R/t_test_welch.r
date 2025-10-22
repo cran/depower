@@ -117,7 +117,7 @@
 #'                                under the null hypothesis.
 #' }
 #'
-#' @seealso [stats::t.test()]
+#' @seealso [depower::t_test_paired()]
 #'
 #' @examples
 #' #----------------------------------------------------------------------------
@@ -140,21 +140,21 @@
 #'
 #' @export
 t_test_welch <- function(
-    data,
-    alternative = "two.sided",
-    ci_level = NULL,
-    mean_null = 0
+  data,
+  alternative = "two.sided",
+  ci_level = NULL,
+  mean_null = 0
 ) {
   #-----------------------------------------------------------------------------
   # Check arguments
   #-----------------------------------------------------------------------------
-  if(!(is.list(data) && length(data) == 2L)) {
+  if (!(is.list(data) && length(data) == 2L)) {
     stop("Argument 'data' must be a list of length 2.")
   }
 
   has_ci <- !is.null(ci_level)
-  if(has_ci) {
-    if(!(is.numeric(ci_level) && length(ci_level == 1L))) {
+  if (has_ci) {
+    if (!(is.numeric(ci_level) && length(ci_level) == 1L)) {
       stop("Argument 'ci_level' must be a scalar numeric.")
     }
   } else {
@@ -163,7 +163,7 @@ t_test_welch <- function(
     ci_level <- NA_real_
   }
 
-  if(!(is.numeric(mean_null) && length(mean_null) == 1L)) {
+  if (!(is.numeric(mean_null) && length(mean_null) == 1L)) {
     stop("Argument 'mean_null' must be a scalar numeric.")
   }
 
@@ -171,11 +171,11 @@ t_test_welch <- function(
   # t-test
   #-----------------------------------------------------------------------------
   d1 <- data[[1L]]
-  if(anyNA(d1)) {
+  if (anyNA(d1)) {
     d1 <- d1[!is.na(d1)]
   }
   d2 <- data[[2L]]
-  if(anyNA(d2)) {
+  if (anyNA(d2)) {
     d2 <- d2[!is.na(d2)]
   }
 
@@ -192,35 +192,37 @@ t_test_welch <- function(
   tstat <- (diff_mean - mean_null) / stderr
   df <- sum_var_n^2 / (var_n1^2 / (n1 - 1L) + var_n2^2 / (n2 - 1L))
 
-  if(alternative == "two.sided") {
+  if (alternative == "two.sided") {
     # A bit faster than pt(abs(tstat), df, lower.tail = FALSE)?
     p <- 2 * pt(-abs(tstat), df)
     method <- "Welch's two-sample t-test for 'two-sided' alternative"
-    if(has_ci) {
+    if (has_ci) {
       alpha <- 1 - (1 - ci_level) / 2
       crit <- qt(p = alpha, df = df)
       diff_mean_lower <- mean_null + (tstat - crit) * stderr
       diff_mean_upper <- mean_null + (tstat + crit) * stderr
     }
-  } else if(alternative == "greater") {
+  } else if (alternative == "greater") {
     # A bit faster than pt(tstat, df, lower.tail = FALSE)?
     p <- pt(-tstat, df)
     method <- "Welch's two-sample t-test for 'greater than' alternative"
-    if(has_ci) {
+    if (has_ci) {
       crit <- qt(p = ci_level, df = df)
       diff_mean_lower <- mean_null + (tstat - crit) * stderr
       diff_mean_upper <- Inf
     }
-  } else if(alternative == "less") {
+  } else if (alternative == "less") {
     p <- pt(tstat, df)
     method <- "Welch's two-sample t-test for 'less than' alternative"
-    if(has_ci) {
+    if (has_ci) {
       crit <- qt(p = ci_level, df = df)
       diff_mean_lower <- -Inf
       diff_mean_upper <- mean_null + (tstat + crit) * stderr
     }
   } else {
-    stop("Argument 'alternative' must be one of 'two.sided', 'greater' or 'less'.")
+    stop(
+      "Argument 'alternative' must be one of 'two.sided', 'greater' or 'less'."
+    )
   }
 
   #-----------------------------------------------------------------------------

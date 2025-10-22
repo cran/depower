@@ -8,8 +8,8 @@
 #' p-value less than or equal to `alpha`. e.g.
 #'
 #' ```{r, eval = FALSE}
-#' sum(p <= alpha, na.rm = TRUE) / nsims
-#' ````
+#' sum(p <= alpha) / nsims
+#' ```
 #'
 #' Power is defined as the expected probability of rejecting the null hypothesis
 #' for a chosen value of the unknown effect. In a multiple comparisons scenario,
@@ -48,7 +48,7 @@
 #'   nsims = 200
 #' )
 #'
-#' # ... is empty, so a an appropriate default function will be provided
+#' # ... is empty, so an appropriate default function will be provided
 #' power(data)
 #'
 #' # This is equivalent to leaving ... empty
@@ -194,7 +194,7 @@
 #' #----------------------------------------------------------------------------
 #' library(depower)
 #'
-#' # Power for independent two-sample t-Test
+#' # Power for independent two-sample t-test
 #' set.seed(1234)
 #' data <- sim_log_lognormal(
 #'   n1 = 20,
@@ -216,7 +216,7 @@
 #'   alpha = 0.01
 #' )
 #'
-#' # Power for dependent two-sample t-Test
+#' # Power for dependent two-sample t-test
 #' set.seed(1234)
 #' sim_log_lognormal(
 #'   n1 = 20,
@@ -229,7 +229,7 @@
 #' ) |>
 #'   power()
 #'
-#' # Power for mixed-type two-sample t-Test
+#' # Power for mixed-type two-sample t-test
 #' set.seed(1234)
 #' sim_log_lognormal(
 #'   n1 = 20,
@@ -242,7 +242,7 @@
 #' ) |>
 #'   power()
 #'
-#' # Power for one-sample t-Test
+#' # Power for one-sample t-test
 #' set.seed(1234)
 #' sim_log_lognormal(
 #'   n1 = 20,
@@ -281,30 +281,32 @@
 #'
 #' @export
 power <- function(
-    data,
-    ...,
-    alpha = 0.05,
-    list_column = FALSE,
-    ncores = 1L
+  data,
+  ...,
+  alpha = 0.05,
+  list_column = FALSE,
+  ncores = 1L
 ) {
-  if(".funs" %in% ...names()) {
-    stop("Argument '.funs' is reserved for use in power.default(). Use power(...) instead.")
+  if (".funs" %in% ...names()) {
+    stop(
+      "Argument '.funs' is reserved for use in power.default(). Use power(...) instead."
+    )
   }
   UseMethod("power")
 }
 
 #' @export
 power.nb <- function(
-    data,
-    ...,
-    alpha = 0.05,
-    list_column = FALSE,
-    ncores = 1L
+  data,
+  ...,
+  alpha = 0.05,
+  list_column = FALSE,
+  ncores = 1L
 ) {
   #-----------------------------------------------------------------------------
   # Process dots
   #-----------------------------------------------------------------------------
-  if(...length() == 0L) {
+  if (...length() == 0L) {
     .funs <- alist("NB Wald test" = wald_test_nb())
   } else {
     .funs <- dots(...)
@@ -324,16 +326,16 @@ power.nb <- function(
 
 #' @export
 power.bnb <- function(
-    data,
-    ...,
-    alpha = 0.05,
-    list_column = FALSE,
-    ncores = 1L
+  data,
+  ...,
+  alpha = 0.05,
+  list_column = FALSE,
+  ncores = 1L
 ) {
   #-----------------------------------------------------------------------------
   # Process dots
   #-----------------------------------------------------------------------------
-  if(...length() == 0L) {
+  if (...length() == 0L) {
     .funs <- alist("BNB Wald test" = wald_test_bnb())
   } else {
     .funs <- dots(...)
@@ -353,16 +355,16 @@ power.bnb <- function(
 
 #' @export
 power.log_lognormal_one_sample <- function(
-    data,
-    ...,
-    alpha = 0.05,
-    list_column = FALSE,
-    ncores = 1L
+  data,
+  ...,
+  alpha = 0.05,
+  list_column = FALSE,
+  ncores = 1L
 ) {
   #-----------------------------------------------------------------------------
   # Process dots
   #-----------------------------------------------------------------------------
-  if(...length() == 0L) {
+  if (...length() == 0L) {
     .funs <- alist("One-sample t-Test" = t_test_paired())
   } else {
     .funs <- dots(...)
@@ -382,16 +384,16 @@ power.log_lognormal_one_sample <- function(
 
 #' @export
 power.log_lognormal_independent_two_sample <- function(
-    data,
-    ...,
-    alpha = 0.05,
-    list_column = FALSE,
-    ncores = 1L
+  data,
+  ...,
+  alpha = 0.05,
+  list_column = FALSE,
+  ncores = 1L
 ) {
   #-----------------------------------------------------------------------------
   # Process dots
   #-----------------------------------------------------------------------------
-  if(...length() == 0L) {
+  if (...length() == 0L) {
     .funs <- alist("Welch's t-Test" = t_test_welch())
   } else {
     .funs <- dots(...)
@@ -411,16 +413,16 @@ power.log_lognormal_independent_two_sample <- function(
 
 #' @export
 power.log_lognormal_dependent_two_sample <- function(
-    data,
-    ...,
-    alpha = 0.05,
-    list_column = FALSE,
-    ncores = 1L
+  data,
+  ...,
+  alpha = 0.05,
+  list_column = FALSE,
+  ncores = 1L
 ) {
   #-----------------------------------------------------------------------------
   # Process dots
   #-----------------------------------------------------------------------------
-  if(...length() == 0L) {
+  if (...length() == 0L) {
     .funs <- alist("Paired t-Test" = t_test_paired())
   } else {
     .funs <- dots(...)
@@ -440,11 +442,11 @@ power.log_lognormal_dependent_two_sample <- function(
 
 #' @export
 power.log_lognormal_mixed_two_sample <- function(
-    data,
-    ...,
-    alpha = 0.05,
-    list_column = FALSE,
-    ncores = 1L
+  data,
+  ...,
+  alpha = 0.05,
+  list_column = FALSE,
+  ncores = 1L
 ) {
   #-----------------------------------------------------------------------------
   # Process dots
@@ -452,7 +454,7 @@ power.log_lognormal_mixed_two_sample <- function(
   # If an invalid function is supplied, error
   # If a valid function is supplied, pass that to the corresponding data subset.
   #-----------------------------------------------------------------------------
-  if(...length() == 0L) {
+  if (...length() == 0L) {
     .funs <- alist(
       "Welch's t-Test" = t_test_welch(),
       "Paired t-Test" = t_test_paired()
@@ -462,24 +464,30 @@ power.log_lognormal_mixed_two_sample <- function(
 
     fun_deparse <- vapply(
       X = .funs,
-      FUN = function(x) {deparse1(x[[1L]])},
+      FUN = function(x) {
+        deparse1(x[[1L]])
+      },
       FUN.VALUE = character(1),
       USE.NAMES = FALSE
     )
-    if(any(!fun_deparse %in% c("t_test_welch", "t_test_paired"))) {
-      stop("Argument '...' must only use t_test_welch() and t_test_paired() for mixed-type data. See ?depower::power().")
+    if (any(!fun_deparse %in% c("t_test_welch", "t_test_paired"))) {
+      stop(
+        "Argument '...' must only use t_test_welch() and t_test_paired() for mixed-type data. See ?depower::power()."
+      )
     }
-    if(!"t_test_welch" %in% fun_deparse) {
+    if (!"t_test_welch" %in% fun_deparse) {
       .funs <- c(.funs, "Welch's t-Test" = quote(t_test_welch()))
     }
-    if(!"t_test_paired" %in% fun_deparse) {
+    if (!"t_test_paired" %in% fun_deparse) {
       .funs <- c(.funs, "Paired t-Test" = quote(t_test_paired()))
     }
   }
 
   fun_deparse <- vapply(
     X = .funs,
-    FUN = function(x) {deparse1(x[[1L]])},
+    FUN = function(x) {
+      deparse1(x[[1L]])
+    },
     FUN.VALUE = character(1),
     USE.NAMES = FALSE
   )
@@ -518,27 +526,31 @@ power.log_lognormal_mixed_two_sample <- function(
 #' @noRd
 #' @export
 power.default <- function(
-    data,
-    ...,
-    alpha = 0.05,
-    list_column = FALSE,
-    ncores = 1L,
-    .funs = NULL
+  data,
+  ...,
+  alpha = 0.05,
+  list_column = FALSE,
+  ncores = 1L,
+  .funs = NULL
 ) {
   #-----------------------------------------------------------------------------
   # Check arguments
   #-----------------------------------------------------------------------------
-  if(!is.data.frame(data)) {
+  if (!is.data.frame(data)) {
     stop("Argument 'data' must be a data frame.")
   }
-  if(!inherits(x = data[["data"]], what = "list")) {
-    stop("Argument 'data' must contain a column named 'data' that is a list-column of simulated data.")
+  if (!inherits(x = data[["data"]], what = "list")) {
+    stop(
+      "Argument 'data' must contain a column named 'data' that is a list-column of simulated data."
+    )
   }
 
-  if(...length() > 0L) {
-    stop("Argument '...' must not be used in power.default(). Instead, use argument '.funs'.")
+  if (...length() > 0L) {
+    stop(
+      "Argument '...' must not be used in power.default(). Instead, use argument '.funs'."
+    )
   }
-  if(is.null(.funs)) {
+  if (is.null(.funs)) {
     stop("Argument '.funs' must be a named list of calls.")
   }
   are_calls <- vapply(
@@ -549,25 +561,25 @@ power.default <- function(
     USE.NAMES = FALSE
   )
   # Should this refer to ... or .funs? ... is what the user sees.
-  if(!all(are_calls)) {
-    stop("Argument '...' must be name-value pairs of calls. See ?depower::power for an explanation.")
+  if (!all(are_calls)) {
+    stop(
+      "Argument '...' must be name-value pairs of calls. See ?depower::power for an explanation."
+    )
   }
   fun_names <- names(.funs)
 
-  if(!is.numeric(alpha) || any(alpha <= 0) || any(alpha >= 1)) {
+  if (!is.numeric(alpha) || any(alpha <= 0) || any(alpha >= 1)) {
     stop("Argument 'alpha' must be a numeric vector from (0,1).")
   }
 
-  if(!is.numeric(ncores) || length(ncores) != 1L || ncores < 1L) {
+  if (!is.numeric(ncores) || length(ncores) != 1L || ncores < 1L) {
     stop("Argument 'ncores' must be a positive scalar integer.")
   }
-  if(ncores > 1L) {
-    if(isTRUE(ncores > parallel::detectCores())) {
+  if (ncores > 1L) {
+    if (isTRUE(ncores > parallel::detectCores())) {
       max <- parallel::detectCores()
       warning("Argument 'ncores' should not be greater than ", max)
     }
-    cluster <- multidplyr::new_cluster(ncores)
-    multidplyr::cluster_library(cluster, 'depower')
   }
 
   #-----------------------------------------------------------------------------
@@ -581,35 +593,163 @@ power.default <- function(
   )
 
   #-----------------------------------------------------------------------------
-  # Eval functions
+  # Prepare for evaluation
   #-----------------------------------------------------------------------------
   # Ensure calls have correct data argument
-  .funs <- lapply(.funs, function(x) {x[["data"]] <- quote(d);x})
+  .funs <- lapply(.funs, function(x) {
+    x[["data"]] <- quote(d)
+    x
+  })
 
-  # A little more efficient?
-  eval2 <- function(data, fun_name) {
-    f <- .funs[[fun_name]]
+  # A little more efficient than
+  # dplyr::mutate(result = list(lapply(data, function(d) {eval(.funs[[test]])})))
+  eval2 <- function(data, funs, fun_name) {
+    f <- funs[[fun_name]]
     enclos <- parent.frame()
     lapply(
       X = data,
-      FUN = function(d) {eval(expr = f, envir = list(d = d), enclos = enclos)}
+      FUN = function(d) {
+        eval(expr = f, envir = list(d = d), enclos = enclos)
+      }
     )
   }
 
+  #-----------------------------------------------------------------------------
+  # If randomization test, perform parametric simulation of the test statistic
+  # distribution under the null hypothesis.
+  #-----------------------------------------------------------------------------
+  are_simulated <- vapply(
+    X = .funs,
+    FUN = function(x) {
+      isTRUE(eval(x$distribution)$distribution == "simulated")
+    },
+    FUN.VALUE = logical(1L),
+    USE.NAMES = TRUE
+  )
+
+  if (any(are_simulated)) {
+    # Simulate data under the null hypothesis
+    res_null <- sim_null(data, .funs)
+
+    # Use asymptotic method to calculate observed test statistic.
+    .funs_null <- lapply(
+      .funs,
+      function(x) {
+        if (isTRUE(eval(x$distribution)$distribution == "simulated")) {
+          x[["distribution"]] <- asymptotic()
+          x
+        } else {
+          x
+        }
+      }
+    )
+
+    # Simulate distribution of the null test statistic
+    if (ncores > 1L) {
+      cluster <- multidplyr::new_cluster(ncores)
+      multidplyr::cluster_library(cluster, 'depower')
+    }
+    res_null <- res_null |>
+      dplyr::filter(.data$distribution_test_stat == "simulated") |>
+      dplyr::rowwise() |>
+      {
+        \(.) {
+          if (ncores > 1L) {
+            multidplyr::partition(data = ., cluster = cluster)
+          } else {
+            .
+          }
+        }
+      }() |>
+      dplyr::mutate(
+        result = list(eval2(
+          data = .data$data_null,
+          funs = .funs_null,
+          fun_name = .data$test
+        ))
+      ) |>
+      {
+        \(.) {
+          if (ncores > 1L) {
+            dplyr::collect(x = .)
+          } else {
+            .
+          }
+        }
+      }() |>
+      dplyr::ungroup()
+
+    get_test_stat <- function(result, test_stat) {
+      vapply(
+        X = result,
+        FUN = function(x) {
+          x[[test_stat]]
+        },
+        FUN.VALUE = numeric(1L)
+      ) |>
+        list()
+    }
+
+    res_null <- res_null |>
+      dplyr::rowwise() |>
+      dplyr::mutate(test_stat_null = get_test_stat(.data$result, "chisq")) |>
+      dplyr::ungroup() |>
+      dplyr::select(dplyr::any_of(names(res)), "test_stat_null")
+
+    joinby <- intersect(names(res), names(res_null))
+    res <- dplyr::left_join(res, res_null, by = joinby)
+
+    .funs <- lapply(
+      .funs,
+      function(x) {
+        if (isTRUE(eval(x$distribution)$distribution == "simulated")) {
+          x[["distribution"]][["test_stat_null"]] <- quote(test_stat_null)
+          x
+        } else {
+          x
+        }
+      }
+    )
+  }
+
+  #-----------------------------------------------------------------------------
+  # Run tests on the simulation data
+  #-----------------------------------------------------------------------------
+  if (ncores > 1L) {
+    cluster <- multidplyr::new_cluster(ncores)
+    multidplyr::cluster_library(cluster, 'depower')
+  }
   res <- res |>
     dplyr::rowwise() |>
-    {\(.) if(ncores > 1L) {multidplyr::partition(data = ., cluster = cluster)} else {.}}() |>
-    #dplyr::mutate(result = list(lapply(data, function(d) {eval(.funs[[test]])}))) |>
-    dplyr::mutate(result = list(eval2(data = data, fun_name = test))) |>
-    {\(.) if(ncores > 1L) {dplyr::collect(x = .)} else {.}}() |>
+    {
+      \(.) {
+        if (ncores > 1L) {
+          multidplyr::partition(data = ., cluster = cluster)
+        } else {
+          .
+        }
+      }
+    }() |>
+    dplyr::mutate(
+      result = list(eval2(data = data, funs = .funs, fun_name = .data$test))
+    ) |>
+    {
+      \(.) {
+        if (ncores > 1L) {
+          dplyr::collect(x = .)
+        } else {
+          .
+        }
+      }
+    }() |>
     dplyr::ungroup()
 
   # Some tests may have a missing value for the p-value. We need to update the
   # total number of valid simulations.
-  if(any_missing_p(res[["result"]])) {
+  if (any_missing_p(res[["result"]])) {
     res <- res |>
       dplyr::rowwise() |>
-      dplyr::mutate(nsims = n_valid_pvalue(result)) |>
+      dplyr::mutate(nsims = n_valid_pvalue(.data$result)) |>
       dplyr::ungroup()
   }
 
@@ -626,16 +766,16 @@ power.default <- function(
   #-----------------------------------------------------------------------------
   res <- res |>
     dplyr::rowwise() |>
-    dplyr::mutate(power = get_power(result, alpha, nsims)) |>
+    dplyr::mutate(power = get_power(.data$result, alpha, .data$nsims)) |>
     dplyr::ungroup()
 
   #-----------------------------------------------------------------------------
   # Prepare return
   #-----------------------------------------------------------------------------
   # Subset
-  if(!list_column) {
-    exclude <- c("data", "result")
-    res <- res[-match(exclude, names(res))]
+  if (!list_column) {
+    res <- res |>
+      dplyr::select(-dplyr::any_of(c("data", "result", "test_stat_null")))
   }
 
   # Column labels
@@ -658,14 +798,17 @@ power.default <- function(
     "Distribution" = "distribution",
     "N Simulations" = "nsims",
     "Test" = "test",
+    "Test statistic under the null" = "test_stat_null",
     "Alpha" = "alpha",
     "Data" = "data",
     "Result" = "result",
     "Power" = "power"
   )
   idx <- match(names(res), vars)
-  if(anyNA(idx)) {stop("Unknown variable found while labeling data frame.")}
-  for(i in seq_len(ncol(res))) {
+  if (anyNA(idx)) {
+    stop("Unknown variable found while labeling data frame.")
+  }
+  for (i in seq_len(ncol(res))) {
     attr(res[[i]], "label") <- names(vars)[idx][i]
   }
 
@@ -686,7 +829,9 @@ power.default <- function(
 get_power <- function(result, alpha, nsims) {
   p <- vapply(
     X = result,
-    FUN = function(x) {x[["p"]]},
+    FUN = function(x) {
+      x[["p"]]
+    },
     FUN.VALUE = numeric(1L)
   )
 
@@ -701,7 +846,7 @@ not_zeros <- function(x, max_zeros) {
   !vapply(
     X = x,
     FUN = function(x) {
-      if(is.data.frame(x)) {
+      if (is.data.frame(x)) {
         x1 <- x[x[["condition"]] == 1, "value"]
         x2 <- x[x[["condition"]] == 2, "value"]
         xx1 <- sum(x1 == 0, na.rm = TRUE) / length(x1) > max_zeros
@@ -715,7 +860,8 @@ not_zeros <- function(x, max_zeros) {
           },
           FUN.VALUE = logical(1),
           USE.NAMES = FALSE
-        ) |> any(na.rm = TRUE)
+        ) |>
+          any(na.rm = TRUE)
       }
     },
     FUN.VALUE = logical(1),
@@ -734,7 +880,7 @@ any_zeros <- function(x, max_zeros) {
       lapply(
         X = x,
         FUN = function(x) {
-          if(is.data.frame(x)) {
+          if (is.data.frame(x)) {
             x1 <- x[x[["condition"]] == 1, "value"]
             x2 <- x[x[["condition"]] == 2, "value"]
             xx1 <- sum(x1 == 0, na.rm = TRUE) / length(x1) > max_zeros
@@ -792,5 +938,3 @@ n_valid_pvalue <- function(x) {
     negate() |>
     sum()
 }
-
-utils::globalVariables(c("test", "result", "nsims"))

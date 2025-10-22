@@ -1,3 +1,5 @@
+library(depower)
+
 #-------------------------------------------------------------------------------
 # Two sample dependent t_test
 #-------------------------------------------------------------------------------
@@ -24,7 +26,8 @@ grid <- grid |>
   )
 
 test_plot <- function(fun, grid) {
-  for(i in sample(seq_len(nrow(grid)), size = 10, replace = FALSE)) {#seq_len(nrow(grid))) {
+  for (i in sample(seq_len(nrow(grid)), size = 10, replace = FALSE)) {
+    #seq_len(nrow(grid))) {
     res <- fun(
       n1 = grid$params[[i]]$n1,
       n2 = grid$params[[i]]$n1,
@@ -90,7 +93,8 @@ grid <- grid |>
   )
 
 test_plot <- function(fun, grid) {
-  for(i in sample(seq_len(nrow(grid)), size = 10, replace = FALSE)) {#seq_len(nrow(grid))) {
+  for (i in sample(seq_len(nrow(grid)), size = 10, replace = FALSE)) {
+    #seq_len(nrow(grid))) {
     res <- fun(
       n1 = grid$params[[i]]$n1,
       n2 = grid$params[[i]]$n2,
@@ -152,7 +156,8 @@ grid <- grid |>
   )
 
 test_plot <- function(fun, grid) {
-  for(i in sample(seq_len(nrow(grid)), size = 10, replace = FALSE)) {#seq_len(nrow(grid))) {
+  for (i in sample(seq_len(nrow(grid)), size = 10, replace = FALSE)) {
+    #seq_len(nrow(grid))) {
     res <- fun(
       n1 = grid$params[[i]]$n1,
       ratio = grid$params[[i]]$ratio,
@@ -209,12 +214,17 @@ grid <- grid |>
       ratio = runif(n = lratio, min = 1.2, max = 1.8),
       dispersion1 = runif(n = ldispersion1, min = 1, max = 8),
       dispersion2 = runif(n = ldispersion2, min = 1, max = 8),
-      test = sample(c(`Wald test` = "wald_test_nb", `LRT` = "lrt_nb"), ltest, replace = FALSE)
+      test = sample(
+        c(`Wald test` = "wald_test_nb", `LRT` = "lrt_nb"),
+        ltest,
+        replace = FALSE
+      )
     ))
   )
 
 test_plot <- function(fun, grid) {
-  for(i in sample(seq_len(nrow(grid)), size = 5, replace = FALSE)) {#seq_len(nrow(grid))) {
+  for (i in sample(seq_len(nrow(grid)), size = 5, replace = FALSE)) {
+    #seq_len(nrow(grid))) {
     res <- fun(
       n1 = grid$params[[i]]$n1,
       n2 = grid$params[[i]]$n2,
@@ -274,12 +284,17 @@ grid <- grid |>
       mean1 = rnorm(n = lmean1, mean = 20, sd = 5),
       ratio = runif(n = lratio, min = 1.2, max = 1.8),
       dispersion = runif(n = ldispersion, min = 1, max = 8),
-      test = sample(c(`Wald test` = "wald_test_bnb", `LRT` = "lrt_bnb"), ltest, replace = FALSE)
+      test = sample(
+        c(`Wald test` = "wald_test_bnb", `LRT` = "lrt_bnb"),
+        ltest,
+        replace = FALSE
+      )
     ))
   )
 
 test_plot <- function(fun, grid) {
-  for(i in sample(seq_len(nrow(grid)), size = 5, replace = FALSE)) {#seq_len(nrow(grid))) {
+  for (i in sample(seq_len(nrow(grid)), size = 5, replace = FALSE)) {
+    #seq_len(nrow(grid))) {
     res <- fun(
       n = grid$params[[i]]$n,
       mean1 = grid$params[[i]]$mean1,
@@ -321,7 +336,24 @@ set.seed(1234)
 sim_bnb(
   n = c(10),
   mean1 = 5.9,
-  ratio = c(0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2),
+  ratio = c(
+    0.5,
+    0.6,
+    0.7,
+    0.8,
+    0.9,
+    1,
+    1.1,
+    1.2,
+    1.3,
+    1.4,
+    1.5,
+    1.6,
+    1.7,
+    1.8,
+    1.9,
+    2
+  ),
   dispersion = c(0.49, 2),
   nsims = 100,
   return_type = "list"

@@ -13,7 +13,6 @@ sim_log_lognormal(
   cor = 0,
   nsims = 1L,
   return_type = "list",
-  ncores = 1L,
   messages = TRUE
 )
 }
@@ -68,12 +67,6 @@ The data structure of the simulated data. If \code{"list"} (default), a
 list object is returned. If \code{"data.frame"} a data frame in tall format
 is returned. The list object provides computational efficiency and the
 data frame object is convenient for formulas. See 'Value'.}
-
-\item{ncores}{(Scalar integer: \code{1L}; \verb{[1,Inf)})\cr
-The number of cores (number of worker processes) to use. Do not set
-greater than the value returned by \code{\link[parallel:detectCores]{parallel::detectCores()}}. May be
-helpful when the number of parameter combinations is large and \code{nsims}
-is large.}
 
 \item{messages}{(Scalar logical: \code{TRUE})\cr
 Whether or not to display messages for pathological simulation cases.}
@@ -338,7 +331,4 @@ sim_log_lognormal(
 \insertRef{hauschke_1992}{depower}
 
 \insertRef{johnson_1994}{depower}
-}
-\seealso{
-\code{\link[stats:Normal]{stats::rnorm()}}, \code{\link[mvnfast:rmvn]{mvnfast::rmvn()}}
 }

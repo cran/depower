@@ -40,10 +40,43 @@
 #'
 #' Under \eqn{H_{null}}, the LRT test statistic is asymptotically distributed
 #' as \eqn{\chi^2_1}. The approximate level \eqn{\alpha} test rejects
-#' \eqn{H_{null}} if \eqn{\lambda \geq \chi^2_1(1 - \alpha)}. Note that
+#' \eqn{H_{null}} if \eqn{\lambda \geq \chi^2_1(1 - \alpha)}. However,
 #' the asymptotic critical value is known to underestimate the exact critical
-#' value. Hence, the nominal significance level may not be achieved for small
-#' sample sizes (possibly \eqn{n \leq 10} or \eqn{n \leq 50}).
+#' value and the nominal significance level may not be achieved for small sample
+#' sizes. Argument `distribution` allows control of the distribution of
+#' the \eqn{\chi^2_1} test statistic under the null hypothesis by use of
+#' functions [depower::asymptotic()] and [depower::simulated()].
+#'
+#' Note that standalone use of this function with `equal_dispersion = FALSE`
+#' and `distribution = simulated()`, e.g.
+#'
+#' ```{r, eval = FALSE}
+#' data |>
+#'   lrt_nb(
+#'     equal_dispersion = FALSE,
+#'     distribution = simulated()
+#'   )
+#' ```
+#'
+#' results in a nonparametric randomization test based on label permutation.
+#' This violates the assumption of exchangeability for the randomization test
+#' because the labels are not exchangeable when the null hypothesis assumes
+#' unequal dispersions. However, used inside [depower::power()], e.g.
+#'
+#' ```{r, eval = FALSE}
+#' data |>
+#'   power(
+#'     lrt_nb(
+#'       equal_dispersion = FALSE,
+#'       distribution = simulated()
+#'     )
+#'   )
+#' ```
+#'
+#' results in parametric resampling and no label permutation in performed.
+#' Thus, setting `equal_dispersion = FALSE` and `distribution = simulated()` is
+#' only recommended when [depower::lrt_nb()] is used inside of
+#' [depower::power()]. See also, [depower::simulated()].
 #'
 #' @references
 #' \insertRef{rettiganti_2012}{depower}
@@ -63,6 +96,12 @@
 #' @param ratio_null (Scalar numeric: `1`; `(0, Inf)`)\cr
 #'        The ratio of means assumed under the null hypothesis (group 2 / group 1).
 #'        Typically `ratio_null = 1` (no difference). See 'Details' for
+#'        additional information.
+#' @param distribution (function: [depower::asymptotic()] or
+#'        [depower::simulated()])\cr
+#'        The method used to define the distribution of the \eqn{\chi^2}
+#'        likelihood ratio test statistic under the null hypothesis. See
+#'        'Details' and [depower::asymptotic()] or [depower::simulated()] for
 #'        additional information.
 #' @param ... Optional arguments passed to the MLE function [depower::mle_nb()].
 #'
@@ -96,6 +135,8 @@
 #'   13 \tab \tab `mle_message` \tab Information from the optimizer.
 #' }
 #'
+#' @seealso [depower::wald_test_nb()]
+#'
 #' @examples
 #' #----------------------------------------------------------------------------
 #' # lrt_nb() examples
@@ -116,25 +157,52 @@
 #' @importFrom stats pchisq
 #'
 #' @export
-lrt_nb <- function(data, equal_dispersion = FALSE, ratio_null = 1, ...) {
+lrt_nb <- function(
+  data,
+  equal_dispersion = FALSE,
+  ratio_null = 1,
+  distribution = asymptotic(),
+  ...
+) {
   #-----------------------------------------------------------------------------
   # Check args
   #-----------------------------------------------------------------------------
-  if(!(is.list(data) && length(data) == 2L)) {
+  if (!(is.list(data) && length(data) == 2L)) {
     stop("Argument 'data' must be a list with 2 elements.")
   }
-  if(!(is.logical(equal_dispersion) && length(equal_dispersion) == 1L)) {
+  if (any(data[[1L]] < 0, na.rm = TRUE) || any(data[[2L]] < 0, na.rm = TRUE)) {
+    stop("Argument 'data' must not contain negative numbers.")
+  }
+  if (!(is.logical(equal_dispersion) && length(equal_dispersion) == 1L)) {
     stop("Argument 'equal_dispersion' must be a scalar logical.")
   }
-  if(!(length(ratio_null) == 1L && ratio_null > 0)) {
+  if (!(length(ratio_null) == 1L && ratio_null > 0)) {
     stop("Argument 'ratio_null' must be a positive scalar numeric.")
+  }
+  if (
+    !is.list(distribution) ||
+      length(distribution$distribution) != 1L ||
+      !distribution$distribution %in% c("asymptotic", "simulated")
+  ) {
+    stop(
+      "Argument 'distribution' must be a function from 'depower::asymptotic()' or 'depower::simulated()'."
+    )
   }
 
   #-----------------------------------------------------------------------------
   # Get MLEs
   #-----------------------------------------------------------------------------
-  mle_null <- mle_nb_null(data, equal_dispersion = FALSE, ratio_null = ratio_null, ...)
-  mle_alt <- mle_nb_alt(data, equal_dispersion = FALSE, ...)
+  mle_null <- mle_nb_null(
+    data,
+    equal_dispersion = equal_dispersion,
+    ratio_null = ratio_null,
+    ...
+  )
+  mle_alt <- mle_nb_alt(
+    data,
+    equal_dispersion = equal_dispersion,
+    ...
+  )
 
   #-----------------------------------------------------------------------------
   # LRT
@@ -143,8 +211,37 @@ lrt_nb <- function(data, equal_dispersion = FALSE, ratio_null = 1, ...) {
   nll_alt <- mle_alt[["nll"]]
 
   lrt_stat <- 2 * (nll_null - nll_alt)
+  lrt_stat <- max(0, lrt_stat) # This might result in a negative number.
   lrt_df <- 1L # mle_alt[["nparams"]] - mle_null[["nparams"]]
-  lrt_p <- pchisq(lrt_stat, df = lrt_df, lower.tail = FALSE)
+
+  # Randomization test if needed
+  lrt_stat_null <- if (distribution$distribution == "simulated") {
+    if (is.null(distribution$test_stat_null)) {
+      test_stat_method <- "randomization"
+      call <- match.call()
+      randomize_tests(
+        data = data,
+        distribution = distribution,
+        paired = FALSE,
+        call = call
+      ) |>
+        extract(column = "result", element = "chisq", value = numeric(1L))
+    } else {
+      test_stat_method <- "parametric"
+      distribution$test_stat_null
+    }
+  } else {
+    test_stat_method <- NULL
+    NULL
+  }
+
+  # p-value
+  lrt_p <- pchisq2(
+    q = lrt_stat,
+    df = lrt_df,
+    lower.tail = FALSE,
+    q_null = lrt_stat_null
+  )
 
   #-----------------------------------------------------------------------------
   # Prepare result
@@ -167,7 +264,11 @@ lrt_nb <- function(data, equal_dispersion = FALSE, ratio_null = 1, ...) {
   mle_code <- mle_alt[["mle_code"]]
   mle_message <- mle_alt[["mle_message"]]
 
-  method <- "LRT for independent negative binomial ratio of means"
+  method <- paste0(
+    str_to_title(distribution$method),
+    if (is.null(test_stat_method)) NULL else paste0(" ", test_stat_method),
+    " LRT for independent negative binomial ratio of means"
+  )
 
   #-----------------------------------------------------------------------------
   # Return

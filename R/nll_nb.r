@@ -4,8 +4,8 @@
 #' distributions.
 #'
 #' @details
-#' These functions are primarily designed for speed in simulation. Arguments are
-#' not checked.
+#' These functions are primarily designed for speed in simulation. Limited
+#' argument validation is performed.
 #'
 #' Suppose \eqn{X_1 \sim \text{NB}(\mu, \theta_1)} and
 #' \eqn{X_2 \sim \text{NB}(r\mu, \theta_2)} where \eqn{X_1} and \eqn{X_2} are
@@ -37,8 +37,8 @@
 #'   &n_2 \left[ \theta_2 \ln \theta_2 - \ln \Gamma(\theta_2) \right] + \\
 #'   &(n_1 \bar{x}_1 + n_2 \bar{x}_2) \ln(\mu) - n_1 (\bar{x}_1 + \theta_1) \ln(\mu + \theta_1) + \\
 #'   &n_2 \bar{x}_2 \ln(r) - n_2 (\bar{x}_2 + \theta_2) \ln(r \mu + \theta_2) + \\
-#'   &\sum_{i = 1}^{n_1}{\left( \ln \Gamma(y_{1i} + \theta_1) - \ln(y_{1i}!) \right)} + \\
-#'   &\sum_{j = 1}^{n_2}{\left( \ln \Gamma(y_{2j} + \theta_2) - \ln(y_{2j}!) \right)}
+#'   &\sum_{i = 1}^{n_1}{\left( \ln \Gamma(x_{1i} + \theta_1) - \ln(x_{1i}!) \right)} + \\
+#'   &\sum_{j = 1}^{n_2}{\left( \ln \Gamma(x_{2j} + \theta_2) - \ln(x_{2j}!) \right)}
 #' \end{aligned}
 #' }
 #'
@@ -63,8 +63,8 @@
 #' l(r, \mu, \theta) = \ &(n_1 + n_2) \left[ \theta \ln \theta - \ln \Gamma(\theta) \right] + \\
 #'   &(n_1 \bar{x}_1 + n_2 \bar{x}_2) \ln(\mu) - n_1 (\bar{x}_1 + \theta) \ln(\mu + \theta) + \\
 #'   &n_2 \bar{x}_2 \ln(r) - n_2 (\bar{x}_2 + \theta) \ln(r \mu + \theta) + \\
-#'   &\sum_{i = 1}^{n_1}{\left( \ln \Gamma(y_{1i} + \theta) - \ln(y_{1i}!) \right)} + \\
-#'   &\sum_{j = 1}^{n_2}{\left( \ln \Gamma(y_{2j} + \theta) - \ln(y_{2j}!) \right)}
+#'   &\sum_{i = 1}^{n_1}{\left( \ln \Gamma(x_{1i} + \theta) - \ln(x_{1i}!) \right)} + \\
+#'   &\sum_{j = 1}^{n_2}{\left( \ln \Gamma(x_{2j} + \theta) - \ln(x_{2j}!) \right)}
 #' \end{aligned}
 #' }
 #'
@@ -73,21 +73,18 @@
 #'
 #' \insertRef{aban_2009}{depower}
 #'
-#' @param param (numeric)\cr
-#'        The vector of initial values for NB parameters. Must be in the
-#'        following order for each scenario:
-#' - Null and unequal dispersion: `c(mean1, dispersion1, dispersion2)`
+#' @param param (numeric: `(0, Inf)`)\cr
+#'        A vector of NB parameters. Must be in the following order for each scenario:
+#' - Null and unequal dispersion: `c(mean, dispersion1, dispersion2)`
 #' - Alternative and unequal dispersion: `c(mean1, mean2, dispersion1, dispersion2)`
-#' - Null and equal dispersion: `c(mean1, dispersion)`
+#' - Null and equal dispersion: `c(mean, dispersion)`
 #' - Alternative and equal dispersion: `c(mean1, mean2, dispersion)`
 #'
 #' for groups 1 and 2.
-#' @param value1 (numeric)\cr
-#'        The vector of NB values from group 1. Must not contain
-#'        \link[base]{NA}s.
-#' @param value2 (numeric)\cr
-#'        The vector of NB values from group 2. Must not contain
-#'        \link[base]{NA}s.
+#' @param value1 (integer: `(0, Inf)`)\cr
+#'        The vector of NB values from group 1. Must not contain \link[base]{NA}s.
+#' @param value2 (integer: `(0, Inf)`)\cr
+#'        The vector of NB values from group 2. Must not contain \link[base]{NA}s.
 #' @param equal_dispersion (Scalar logical)\cr
 #'        If `TRUE`, the log-likelihood is calculated assuming both groups have
 #'        the same population dispersion parameter. If `FALSE` (default), the
@@ -98,8 +95,7 @@
 #'
 #' @return Scalar numeric negative log-likelihood.
 #'
-#' @seealso [depower::sim_nb()], [stats::nlminb()], [stats::nlm()],
-#'          [stats::optim()]
+#' @seealso [depower::mle_nb]
 #'
 #' @examples
 #' #----------------------------------------------------------------------------
@@ -118,14 +114,14 @@
 #' )
 #'
 #' nll_nb_alt(
-#'   param = c(mean1 = 10, mean2 = 15, dispersion = 2, dispersion2 = 8),
+#'   param = c(mean1 = 10, mean2 = 15, dispersion1 = 2, dispersion2 = 8),
 #'   value1 = d[[1L]],
 #'   value2 = d[[2L]],
 #'   equal_dispersion = FALSE
 #' )
 #'
 #' nll_nb_null(
-#'   param = c(mean = 10, dispersion = 2, dispersion2 = 8),
+#'   param = c(mean = 10, dispersion1 = 2, dispersion2 = 8),
 #'   value1 = d[[1L]],
 #'   value2 = d[[2L]],
 #'   equal_dispersion = FALSE,
@@ -143,14 +139,14 @@ nll_nb_null <- function(param, value1, value2, equal_dispersion, ratio_null) {
   mean1 <- param[1L]
   mean2 <- mean1 * ratio_null
 
-  if(equal_dispersion) {
-    if(length(param) != 2L) {
+  if (equal_dispersion) {
+    if (length(param) != 2L) {
       stop("Argument 'param' must be length 2 when 'equal_dispersion = TRUE'.")
     }
     dispersion1 <- param[2L]
     dispersion2 <- dispersion1
   } else {
-    if(length(param) != 3L) {
+    if (length(param) != 3L) {
       stop("Argument 'param' must be length 3 when 'equal_dispersion = FALSE'.")
     }
     dispersion1 <- param[2L]
@@ -170,14 +166,14 @@ nll_nb_alt <- function(param, value1, value2, equal_dispersion) {
   mean1 <- param[1L]
   mean2 <- param[2L]
 
-  if(equal_dispersion) {
-    if(length(param) != 3L) {
+  if (equal_dispersion) {
+    if (length(param) != 3L) {
       stop("Argument 'param' must be length 3 when 'equal_dispersion = TRUE'.")
     }
     dispersion1 <- param[3L]
     dispersion2 <- dispersion1
   } else {
-    if(length(param) != 4L) {
+    if (length(param) != 4L) {
       stop("Argument 'param' must be length 4 when 'equal_dispersion = FALSE'.")
     }
     dispersion1 <- param[3L]

@@ -77,10 +77,19 @@ expect_equal(
       cv2 = structure(0.35, label = "CV2"),
       cor = structure(0, label = "Correlation"),
       nsims = structure(2, label = "N Simulations"),
-      distribution = structure("Independent two-sample log(lognormal)", label = "Distribution")
+      distribution = structure(
+        "Independent two-sample log(lognormal)",
+        label = "Distribution"
+      )
     ),
     row.names = c(NA, -1L),
-    class = c("depower", "log_lognormal_independent_two_sample", "tbl_df", "tbl", "data.frame")
+    class = c(
+      "depower",
+      "log_lognormal_independent_two_sample",
+      "tbl_df",
+      "tbl",
+      "data.frame"
+    )
   )
 )
 
@@ -102,10 +111,19 @@ expect_equal(
       ratio = structure(1.3, label = "Ratio"),
       cv1 = structure(0.35, label = "CV"),
       nsims = structure(2, label = "N Simulations"),
-      distribution = structure("One-sample log(lognormal)", label = "Distribution")
+      distribution = structure(
+        "One-sample log(lognormal)",
+        label = "Distribution"
+      )
     ),
     row.names = c(NA, -1L),
-    class = c("depower", "log_lognormal_one_sample", "tbl_df", "tbl", "data.frame")
+    class = c(
+      "depower",
+      "log_lognormal_one_sample",
+      "tbl_df",
+      "tbl",
+      "data.frame"
+    )
   )
 )
 
@@ -133,10 +151,22 @@ expect_equal(
       cv2 = structure(c(0.35, 0.35, 0.35, 0.35, 0.35, 0.35), label = "CV2"),
       cor = structure(c(0, 0, 0, 0, 0.5, 0.5), label = "Correlation"),
       nsims = structure(c(1, 1, 1, 1, 1, 1), label = "N Simulations"),
-      distribution = structure(c(rep("Independent two-sample log(lognormal)", 4), rep("Dependent two-sample log(lognormal)", 2)), label = "Distribution")
+      distribution = structure(
+        c(
+          rep("Independent two-sample log(lognormal)", 4),
+          rep("Dependent two-sample log(lognormal)", 2)
+        ),
+        label = "Distribution"
+      )
     ),
     row.names = c(NA, -6L),
-    class = c("depower", "log_lognormal_mixed_two_sample", "tbl_df", "tbl", "data.frame")
+    class = c(
+      "depower",
+      "log_lognormal_mixed_two_sample",
+      "tbl_df",
+      "tbl",
+      "data.frame"
+    )
   )
 )
 
@@ -157,11 +187,24 @@ expect_equal(
       ratio = structure(c(1.3, 2, 1.3, 2), label = "Ratio"),
       cv1 = structure(c(0.35, 0.35, 0.5, 0.5), label = "CV"),
       nsims = structure(c(1L, 1L, 1L, 1L), label = "N Simulations"),
-      distribution = structure(c("One-sample log(lognormal)", "One-sample log(lognormal)",
-                                 "One-sample log(lognormal)", "One-sample log(lognormal)"), label = "Distribution")
+      distribution = structure(
+        c(
+          "One-sample log(lognormal)",
+          "One-sample log(lognormal)",
+          "One-sample log(lognormal)",
+          "One-sample log(lognormal)"
+        ),
+        label = "Distribution"
+      )
     ),
     row.names = c(NA, -4L),
-    class = c("depower", "log_lognormal_one_sample", "tbl_df", "tbl", "data.frame")
+    class = c(
+      "depower",
+      "log_lognormal_one_sample",
+      "tbl_df",
+      "tbl",
+      "data.frame"
+    )
   )
 )
 

@@ -120,18 +120,18 @@ NULL
 #' @export
 #' @rdname mle_bnb
 mle_bnb_null <- function(
-    data,
-    ratio_null = 1,
-    method = "nlm_constrained",
-    ...
+  data,
+  ratio_null = 1,
+  method = "nlm_constrained",
+  ...
 ) {
   #-----------------------------------------------------------------------------
   # Check args
   #-----------------------------------------------------------------------------
-  if(!(is.list(data) && length(data) == 2L)) {
+  if (!(is.list(data) && length(data) == 2L)) {
     stop("Argument 'data' must be a list with 2 elements.")
   }
-  if(!(length(ratio_null) == 1L && ratio_null > 0)) {
+  if (!(length(ratio_null) == 1L && ratio_null > 0)) {
     stop("Argument 'ratio_null' must be a positive scalar numeric.")
   }
 
@@ -144,11 +144,11 @@ mle_bnb_null <- function(
   n1 <- length(value1)
   n2 <- length(value2)
 
-  if(n1 != n2) {
+  if (n1 != n2) {
     stop("Argument 'data' must have the same sample size for both samples.")
   }
 
-  if(anyNA(value1) || anyNA(value2)) {
+  if (anyNA(value1) || anyNA(value2)) {
     not_na <- complete.cases(value1, value2)
     value1 <- value1[not_na]
     value2 <- value2[not_na]
@@ -206,7 +206,7 @@ mle_bnb_alt <- function(data, method = "nlm_constrained", ...) {
   #-----------------------------------------------------------------------------
   # Check args
   #-----------------------------------------------------------------------------
-  if(!(is.list(data) && length(data) == 2L)) {
+  if (!(is.list(data) && length(data) == 2L)) {
     stop("Argument 'data' must be a list with 2 elements.")
   }
 
@@ -219,11 +219,11 @@ mle_bnb_alt <- function(data, method = "nlm_constrained", ...) {
   n1 <- length(value1)
   n2 <- length(value2)
 
-  if(n1 != n2) {
+  if (n1 != n2) {
     stop("Argument 'data' must have the same sample size for both samples.")
   }
 
-  if(anyNA(value1) || anyNA(value2)) {
+  if (anyNA(value1) || anyNA(value2)) {
     not_na <- complete.cases(value1, value2)
     value1 <- value1[not_na]
     value2 <- value2[not_na]
@@ -248,7 +248,11 @@ mle_bnb_alt <- function(data, method = "nlm_constrained", ...) {
   mle <- mle(
     method = method,
     nll = nll_bnb_alt,
-    parameters = c(mean1 = init_mean1, mean2 = init_mean2, dispersion = init_dispersion),
+    parameters = c(
+      mean1 = init_mean1,
+      mean2 = init_mean2,
+      dispersion = init_dispersion
+    ),
     value1 = value1,
     value2 = value2,
     ...

@@ -53,12 +53,14 @@
 #'
 #' Under \eqn{H_{null}}, the Wald test statistic is asymptotically distributed
 #' as \eqn{\chi^2_1}. The approximate level \eqn{\alpha} test rejects
-#' \eqn{H_{null}} if \eqn{W(f(\hat{r})) \geq \chi^2_1(1 - \alpha)}. Note that
+#' \eqn{H_{null}} if \eqn{W(f(\hat{r})) \geq \chi^2_1(1 - \alpha)}. However,
 #' the asymptotic critical value is known to underestimate the exact critical
-#' value. Hence, the nominal significance level may not be achieved for small
-#' sample sizes (possibly \eqn{n \leq 10} or \eqn{n \leq 50}). The level of
-#' significance inflation also depends on \eqn{f(\cdot)} and is most severe for
-#' \eqn{f(r) = r^2}, where only the exact critical value is recommended.
+#' value and the nominal significance level may not be achieved for small sample
+#' sizes. The level of significance inflation also depends on \eqn{f(\cdot)} and
+#' is most severe for \eqn{f(r) = r^2} where only the exact critical value
+#' should be used. Argument `distribution` allows control of the distribution of
+#' the \eqn{\chi^2_1} test statistic under the null hypothesis by use of
+#' functions [depower::asymptotic()] and [depower::simulated()].
 #'
 #' @references
 #' \insertRef{rettiganti_2012}{depower}
@@ -78,11 +80,17 @@
 #' @param link (Scalar string: `"log"`)\cr
 #'        The one-to-one link function for transformation of the ratio in the
 #'        test hypotheses. Must be one of `"log"` (default), `"sqrt"`,
-#'        `"squared"`, or "`identity"`. See 'Details' for additional information.
+#'        `"squared"`, or `"identity"`. See 'Details' for additional information.
 #' @param ratio_null (Scalar numeric: `1`; `(0, Inf)`)\cr
 #'        The (pre-transformation) ratio of means assumed under the null
 #'        hypothesis (sample 2 / sample 1). Typically `ratio_null = 1`
 #'        (no difference). See 'Details' for additional information.
+#' @param distribution (function: [depower::asymptotic()] or
+#'        [depower::simulated()])\cr
+#'        The method used to define the distribution of the \eqn{\chi^2} Wald
+#'        test statistic under the null hypothesis. See 'Details' and
+#'        [depower::asymptotic()] or [depower::simulated()] for additional
+#'        information.
 #' @param ... Optional arguments passed to the MLE function [depower::mle_bnb()].
 #'
 #' @return
@@ -111,6 +119,8 @@
 #'   15 \tab \tab `mle_message` \tab Information from the optimizer.
 #' }
 #'
+#' @seealso [depower::lrt_bnb()]
+#'
 #' @examples
 #' #----------------------------------------------------------------------------
 #' # wald_test_bnb() examples
@@ -130,25 +140,43 @@
 #'
 #' @export
 wald_test_bnb <- function(
-    data,
-    ci_level = NULL,
-    link = "log",
-    ratio_null = 1,
-    ...
+  data,
+  ci_level = NULL,
+  link = "log",
+  ratio_null = 1,
+  distribution = asymptotic(),
+  ...
 ) {
   #-----------------------------------------------------------------------------
   # Check args
   #-----------------------------------------------------------------------------
-  if(!(is.list(data) && length(data) == 2L)) {
+  if (!(is.list(data) && length(data) == 2L)) {
     stop("Argument 'data' must be a list with 2 elements.")
   }
-  if(!is.null(ci_level)) {
-    if(!is.numeric(ci_level) || length(ci_level) != 1L || ci_level <= 0 || ci_level >= 1) {
+  if (any(data[[1L]] < 0, na.rm = TRUE) || any(data[[2L]] < 0, na.rm = TRUE)) {
+    stop("Argument 'data' must not contain negative numbers.")
+  }
+  if (!is.null(ci_level)) {
+    if (
+      !is.numeric(ci_level) ||
+        length(ci_level) != 1L ||
+        ci_level <= 0 ||
+        ci_level >= 1
+    ) {
       stop("Argument 'ci_level' must be a scalar numeric from (0, 1).")
     }
   }
-  if(!(length(ratio_null) == 1L && ratio_null > 0)) {
+  if (!(length(ratio_null) == 1L && ratio_null > 0)) {
     stop("Argument 'ratio_null' must be a positive scalar numeric.")
+  }
+  if (
+    !is.list(distribution) ||
+      length(distribution$distribution) != 1L ||
+      !distribution$distribution %in% c("asymptotic", "simulated")
+  ) {
+    stop(
+      "Argument 'distribution' must be a function from 'depower::asymptotic()' or 'depower::simulated()'."
+    )
   }
 
   #-----------------------------------------------------------------------------
@@ -168,41 +196,84 @@ wald_test_bnb <- function(
   n2 <- mle_alt[["n2"]]
 
   sigma <- sqrt(
-    mle_ratio * (1 + mle_ratio) * (mle_mean1 + mle_mean2 + mle_dispersion) /
-      (n1 * ((mle_mean1 + mle_mean2) * (mle_mean1 + mle_dispersion) - mle_dispersion * mle_ratio))
+    mle_ratio *
+      (1 + mle_ratio) *
+      (mle_mean1 + mle_mean2 + mle_dispersion) /
+      (n1 *
+        ((mle_mean1 + mle_mean2) *
+          (mle_mean1 + mle_dispersion) -
+          mle_dispersion * mle_ratio))
   )
 
   # Link functions
-  linkf <- switch(link,
+  linkf <- switch(
+    link,
     "log" = log,
     "sqrt" = sqrt,
     "squared" = function(x) x^2,
     "identity" = function(x) x,
-    stop("Argument 'link' must be one of 'log', 'sqrt', 'squared', or 'identity'.")
+    stop(
+      "Argument 'link' must be one of 'log', 'sqrt', 'squared', or 'identity'."
+    )
   )
   # See ?D and ?deriv
-  derivative <- switch(link,
-    "log" = function(x) 1/x,
+  derivative <- switch(
+    link,
+    "log" = function(x) 1 / x,
     "sqrt" = function(x) 1 / (2 * sqrt(x)),
     "squared" = function(x) 2 * x,
     "identity" = function(x) 1,
-    stop("Argument 'link' must be one of 'log', 'sqrt', 'squared', or 'identity'.")
+    stop(
+      "Argument 'link' must be one of 'log', 'sqrt', 'squared', or 'identity'."
+    )
   )
-  inverse <- switch(link,
+  inverse <- switch(
+    link,
     "log" = exp,
     "sqrt" = function(x) x^2,
     "squared" = sqrt,
     "identity" = function(x) x,
-    stop("Argument 'link' must be one of 'log', 'sqrt', 'squared', or 'identity'.")
+    stop(
+      "Argument 'link' must be one of 'log', 'sqrt', 'squared', or 'identity'."
+    )
   )
 
   # Test statistic
-  wald_stat <- ((linkf(mle_ratio) - linkf(ratio_null)) / (derivative(mle_ratio) * sigma))^2
+  wald_stat <- ((linkf(mle_ratio) - linkf(ratio_null)) /
+    (derivative(mle_ratio) * sigma))^2
   wald_df <- 1L
-  wald_p <- pchisq(wald_stat, df = wald_df, lower.tail = FALSE)
+
+  # Randomization test if needed
+  wald_stat_null <- if (distribution$distribution == "simulated") {
+    if (is.null(distribution$test_stat_null)) {
+      test_stat_method <- "randomization"
+      call <- match.call()
+      randomize_tests(
+        data = data,
+        distribution = distribution,
+        paired = TRUE,
+        call = call
+      ) |>
+        extract(column = "result", element = "chisq", value = numeric(1L))
+    } else {
+      test_stat_method <- "parametric"
+      distribution$test_stat_null
+    }
+  } else {
+    test_stat_method <- NULL
+    NULL
+  }
+
+  # p-value
+  wald_p <- pchisq2(
+    q = wald_stat,
+    df = wald_df,
+    lower.tail = FALSE,
+    q_null = wald_stat_null
+  )
 
   # CI
-  if(is.null(ci_level)) {
+  if (is.null(ci_level)) {
     r_lower <- NA_real_
     r_upper <- NA_real_
   } else {
@@ -215,7 +286,11 @@ wald_test_bnb <- function(
   #-----------------------------------------------------------------------------
   # Prepare result
   #-----------------------------------------------------------------------------
-  method <- "Wald test for bivariate negative binomial ratio of means"
+  method <- paste0(
+    str_to_title(distribution$method),
+    if (is.null(test_stat_method)) NULL else paste0(" ", test_stat_method),
+    " Wald test for bivariate negative binomial ratio of means"
+  )
   mle_code <- mle_alt[["mle_code"]]
   mle_message <- mle_alt[["mle_message"]]
 

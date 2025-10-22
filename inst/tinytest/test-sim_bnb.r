@@ -47,7 +47,11 @@ expect_equal(
       ratio = structure(1.3, label = "Ratio"),
       dispersion1 = structure(3, label = "Dispersion"),
       nsims = structure(200, label = "N Simulations"),
-      distribution = structure("Dependent two-sample BNB", label = "Distribution")),
+      distribution = structure(
+        "Dependent two-sample BNB",
+        label = "Distribution"
+      )
+    ),
     row.names = c(NA, -1L),
     class = c("depower", "bnb", "tbl_df", "tbl", "data.frame")
   )
@@ -66,14 +70,72 @@ expect_equal(
   d,
   structure(
     list(
-      n1 = structure(c(20, 30, 20, 30, 20, 30, 20, 30, 20, 30, 20, 30, 20, 30, 20, 30), label = "n1"),
-      n2 = structure(c(20, 30, 20, 30, 20, 30, 20, 30, 20, 30, 20, 30, 20, 30, 20, 30), label = "n2"),
-      mean1 = structure(c(10, 10, 10, 10, 15, 15, 15, 15, 10, 10, 10, 10, 15, 15, 15, 15), label = "Mean1"),
-      mean2 = structure(c(13, 13, 16, 16, 19.5, 19.5, 24, 24, 13, 13, 16, 16, 19.5, 19.5, 24, 24), label = "Mean2"),
-      ratio = structure(c(1.3, 1.3, 1.6, 1.6, 1.3, 1.3, 1.6, 1.6, 1.3, 1.3, 1.6, 1.6, 1.3, 1.3, 1.6, 1.6), label = "Ratio"),
-      dispersion1 = structure(c(10, 10, 10, 10, 10, 10, 10, 10, 20, 20, 20, 20, 20, 20, 20, 20), label = "Dispersion"),
-      nsims = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L), label = "N Simulations"),
-      distribution = structure(rep("Dependent two-sample BNB", 16), label = "Distribution")
+      n1 = structure(
+        c(20, 30, 20, 30, 20, 30, 20, 30, 20, 30, 20, 30, 20, 30, 20, 30),
+        label = "n1"
+      ),
+      n2 = structure(
+        c(20, 30, 20, 30, 20, 30, 20, 30, 20, 30, 20, 30, 20, 30, 20, 30),
+        label = "n2"
+      ),
+      mean1 = structure(
+        c(10, 10, 10, 10, 15, 15, 15, 15, 10, 10, 10, 10, 15, 15, 15, 15),
+        label = "Mean1"
+      ),
+      mean2 = structure(
+        c(
+          13,
+          13,
+          16,
+          16,
+          19.5,
+          19.5,
+          24,
+          24,
+          13,
+          13,
+          16,
+          16,
+          19.5,
+          19.5,
+          24,
+          24
+        ),
+        label = "Mean2"
+      ),
+      ratio = structure(
+        c(
+          1.3,
+          1.3,
+          1.6,
+          1.6,
+          1.3,
+          1.3,
+          1.6,
+          1.6,
+          1.3,
+          1.3,
+          1.6,
+          1.6,
+          1.3,
+          1.3,
+          1.6,
+          1.6
+        ),
+        label = "Ratio"
+      ),
+      dispersion1 = structure(
+        c(10, 10, 10, 10, 10, 10, 10, 10, 20, 20, 20, 20, 20, 20, 20, 20),
+        label = "Dispersion"
+      ),
+      nsims = structure(
+        c(1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L),
+        label = "N Simulations"
+      ),
+      distribution = structure(
+        rep("Dependent two-sample BNB", 16),
+        label = "Distribution"
+      )
     ),
     row.names = c(NA, -16L),
     class = c("depower", "bnb", "tbl_df", "tbl", "data.frame")

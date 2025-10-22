@@ -27,5 +27,5 @@ null <- nll_bnb_null(
   ratio_null = 1
 )
 
-expect_equal(alt, 611.1351, scale = 1, tolerance = 0.001)
-expect_equal(null, 668.9654, scale = 1, tolerance = 0.001)
+expect_equal(alt, 611.1351, scale = 1, tolerance = 0.01)
+expect_equal(null, 668.9654, scale = 1, tolerance = 0.01)

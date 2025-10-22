@@ -99,19 +99,14 @@
 #'        value, the corresponding data is excluded from the set of simulations.
 #'        This is most likely to occur when the sample size is small and the
 #'        dispersion parameter is small.
-#' @param ncores (Scalar integer: `1L`; `[1,Inf)`)\cr
-#'        The number of cores (number of worker processes) to use. Do not set
-#'        greater than the value returned by [parallel::detectCores()]. May be
-#'        helpful when the number of parameter combinations is large and `nsims`
-#'        is large.
 #'
 #' @return If `nsims = 1` and the number of unique parameter combinations is
 #' one, the following objects are returned:
 #' - If `return_type = "list"`, a list:
 #' \tabular{lll}{
 #'   Slot \tab Name \tab Description \cr
-#'   1 \tab \tab Simulated counts from group 1. \cr
-#'   2 \tab \tab Simulated counts from group 2.
+#'   1 \tab `value1` \tab Simulated counts from group 1. \cr
+#'   2 \tab `value2` \tab Simulated counts from group 2.
 #' }
 #' - If `return_type = "data.frame"`, a data frame:
 #' \tabular{lll}{
@@ -138,7 +133,7 @@
 #'   10 \tab `data` \tab List-column of simulated data.
 #' }
 #'
-#' @seealso [depower::sim_bnb()], [stats::rnbinom()]
+#' @seealso [depower::sim_bnb()]
 #'
 #' @examples
 #' #----------------------------------------------------------------------------
@@ -242,48 +237,49 @@
 #'
 #' @export
 sim_nb <- function(
-    n1,
-    n2 = n1,
-    mean1,
-    mean2,
-    ratio,
-    dispersion1,
-    dispersion2 = dispersion1,
-    nsims = 1L,
-    return_type = "list",
-    max_zeros = 0.99,
-    ncores = 1L
+  n1,
+  n2 = n1,
+  mean1,
+  mean2,
+  ratio,
+  dispersion1,
+  dispersion2 = dispersion1,
+  nsims = 1L,
+  return_type = "list",
+  max_zeros = 0.99
 ) {
   #-----------------------------------------------------------------------------
   # Check arguments
   #-----------------------------------------------------------------------------
-  if(!is.numeric(n1) || any(n1 < 2L)) {
+  if (!is.numeric(n1) || any(n1 < 2L)) {
     stop("Argument 'n1' must be an integer vector from [2, Inf).")
   }
-  if(!is.numeric(n2) || any(n2 < 2L)) {
+  if (!is.numeric(n2) || any(n2 < 2L)) {
     stop("Argument 'n2' must be an integer vector from [2, Inf).")
   }
-  if(!is.numeric(mean1) || any(mean1 <= 0)) {
+  if (!is.numeric(mean1) || any(mean1 <= 0)) {
     stop("Argument 'mean1' must be a positive numeric vector.")
   }
 
   missing_mean2 <- missing(mean2)
   missing_ratio <- missing(ratio)
-  if(missing_mean2 && missing_ratio) {
+  if (missing_mean2 && missing_ratio) {
     stop("You must specify one of the arguments: 'mean2' or 'ratio'.")
   }
-  if(!missing_mean2 && !missing_ratio) {
-    stop("Arguments 'mean2' and 'ratio' were both specified. You may only specify one.")
+  if (!missing_mean2 && !missing_ratio) {
+    stop(
+      "Arguments 'mean2' and 'ratio' were both specified. You may only specify one."
+    )
   }
-  if(missing_ratio) {
-    if(!is.numeric(mean2) || any(mean2 <= 0)) {
+  if (missing_ratio) {
+    if (!is.numeric(mean2) || any(mean2 <= 0)) {
       stop("Argument 'mean2' must be a positive numeric vector.")
     }
     ratio_keep <- NULL # For filtering step below
     ratio <- NULL # For checking length(ratio)
   }
-  if(missing_mean2) {
-    if(!is.numeric(ratio) || any(ratio <= 0)) {
+  if (missing_mean2) {
+    if (!is.numeric(ratio) || any(ratio <= 0)) {
       stop("Argument 'ratio' must be a positive numeric vector.")
     }
     mean2 <- as.numeric(tcrossprod(ratio, mean1))
@@ -292,45 +288,45 @@ sim_nb <- function(
     ratio_keep <- round(ratio, 5)
   }
 
-  if(!is.numeric(dispersion1) || any(dispersion1 <= 0)) {
+  if (!is.numeric(dispersion1) || any(dispersion1 <= 0)) {
     stop("Argument 'dispersion1' must be a positive numeric vector.")
   }
-  if(!is.numeric(dispersion2) || any(dispersion2 <= 0)) {
+  if (!is.numeric(dispersion2) || any(dispersion2 <= 0)) {
     stop("Argument 'dispersion2' must be a positive numeric vector.")
   }
-  if(!is.numeric(nsims) || length(nsims) != 1L || nsims < 1L) {
+  if (!is.numeric(nsims) || length(nsims) != 1L || nsims < 1L) {
     stop("Argument 'nsims' must be a positive scalar integer.")
   }
-    if(length(return_type) != 1L) {
+  if (length(return_type) != 1L) {
     stop("Argument 'return_type' must be one of 'list' or 'data.frame'.")
   }
-  data.frame <- switch(return_type,
+  data.frame <- switch(
+    return_type,
     "list" = FALSE,
     "data.frame" = TRUE,
     stop("Argument 'return_type' must be one of 'list' or 'data.frame'.")
   )
-  if(!is.numeric(max_zeros) || length(max_zeros) != 1L || max_zeros < 0 || max_zeros > 1) {
+  if (
+    !is.numeric(max_zeros) ||
+      length(max_zeros) != 1L ||
+      max_zeros < 0 ||
+      max_zeros > 1
+  ) {
     stop("Argument 'max_zeros' must be a scalar numeric from [0,1].")
   }
-  if(!is.numeric(ncores) || length(ncores) != 1L || ncores < 1L) {
-    stop("Argument 'ncores' must be a positive scalar integer.")
-  }
-  if(ncores > 1L) {
-    if(isTRUE(ncores > parallel::detectCores())) {
-      max <- parallel::detectCores()
-      warning("Argument 'ncores' should not be greater than ", max, ".")
-    }
-    cluster <- multidplyr::new_cluster(ncores)
-    multidplyr::cluster_library(cluster, 'depower')
-  }
 
-  needs_grid <- any(c(nsims, lengths(list(n1, n2,
-                mean1, mean2, ratio, dispersion1, dispersion2))) > 1L)
+  needs_grid <- any(
+    c(
+      nsims,
+      lengths(list(n1, n2, mean1, mean2, ratio, dispersion1, dispersion2))
+    ) >
+      1L
+  )
 
   #-----------------------------------------------------------------------------
   # Simulate data
   #-----------------------------------------------------------------------------
-  res <- if(needs_grid) {
+  res <- if (needs_grid) {
     grid_nb(
       n1 = n1,
       n2 = n2,
@@ -342,7 +338,6 @@ sim_nb <- function(
       nsims = nsims,
       data.frame = data.frame,
       max_zeros = max_zeros,
-      ncores = ncores,
       ratio_keep = ratio_keep
     )
   } else {
@@ -365,18 +360,17 @@ sim_nb <- function(
 }
 
 grid_nb <- function(
-    n1,
-    n2,
-    mean1,
-    mean2,
-    ratio,
-    dispersion1,
-    dispersion2,
-    nsims,
-    data.frame,
-    max_zeros,
-    ncores,
-    ratio_keep
+  n1,
+  n2,
+  mean1,
+  mean2,
+  ratio,
+  dispersion1,
+  dispersion2,
+  nsims,
+  data.frame,
+  max_zeros,
+  ratio_keep
 ) {
   #-----------------------------------------------------------------------------
   # Unique combinations for simulating data.
@@ -395,20 +389,21 @@ grid_nb <- function(
     stringsAsFactors = FALSE
   ) |>
     dplyr::mutate(ratio = round(mean2 / mean1, 5), .after = "mean2") |>
-    {\(.) if(!is.null(ratio_keep)) {dplyr::filter(.data = ., ratio %in% ratio_keep)} else {.}}()
+    {
+      \(.) {
+        if (!is.null(ratio_keep)) {
+          dplyr::filter(.data = ., ratio %in% ratio_keep)
+        } else {
+          .
+        }
+      }
+    }()
 
   #-----------------------------------------------------------------------------
   # Simulate data
   #-----------------------------------------------------------------------------
-  if(ncores > 1L) {
-    cluster <- multidplyr::new_cluster(ncores)
-    multidplyr::cluster_library(cluster, 'depower')
-  }
-
-  # Simulate data
   res <- grid_sim |>
     dplyr::rowwise() |>
-    {\(.) if(ncores > 1L) {multidplyr::partition(data = ., cluster = cluster)} else {.}}() |>
     dplyr::mutate(
       data = list(
         sim_nb_two_sample(
@@ -423,18 +418,17 @@ grid_nb <- function(
         )
       )
     ) |>
-    {\(.) if(ncores > 1L) {dplyr::collect(x = .)} else {.}}() |>
     dplyr::ungroup()
 
   # Check if simulated data is all zeros or if the vast majority of data is all
   # zeros. This primarily occurs if you've selected a small dispersion (<0.1)
   # and have a small sample size.
-  if(any_zeros(res[["data"]], max_zeros)) {
+  if (any_zeros(res[["data"]], max_zeros)) {
     res <- res |>
       dplyr::rowwise() |>
       dplyr::mutate(
-        data = list(data[not_zeros(data, max_zeros)]),
-        nsims = length(data)
+        data = list(.data$data[not_zeros(.data$data, max_zeros)]),
+        nsims = length(.data$data)
       ) |>
       dplyr::ungroup()
   }
@@ -456,8 +450,10 @@ grid_nb <- function(
     "Data" = "data"
   )
   idx <- match(names(res), vars)
-  if(anyNA(idx)) {stop("Unknown variable found while labeling data frame.")}
-  for(i in seq_len(ncol(res))) {
+  if (anyNA(idx)) {
+    stop("Unknown variable found while labeling data frame.")
+  }
+  for (i in seq_len(ncol(res))) {
     attr(res[[i]], "label") <- names(vars)[idx][i]
   }
 
@@ -471,34 +467,35 @@ grid_nb <- function(
 }
 
 sim_nb_two_sample <- function(
-    n1,
-    n2,
-    mean1,
-    mean2,
-    dispersion1,
-    dispersion2,
-    nsims,
-    data.frame
+  n1,
+  n2,
+  mean1,
+  mean2,
+  dispersion1,
+  dispersion2,
+  nsims,
+  data.frame
 ) {
   #-----------------------------------------------------------------------------
   # Simulate
   #-----------------------------------------------------------------------------
-  if(nsims > 1L) {
+  if (nsims > 1L) {
     res <- lapply(seq_len(nsims), function(x) {
       list(
         value1 = rnbinom(n = n1, mu = mean1, size = dispersion1),
         value2 = rnbinom(n = n2, mu = mean2, size = dispersion2)
       )
     })
-    if(data.frame) {
+    if (data.frame) {
       res <- lapply(res, list_to_df)
     }
-  } else { # nsims == 1
+  } else {
+    # nsims == 1
     res <- list(
       value1 = rnbinom(n = n1, mu = mean1, size = dispersion1),
       value2 = rnbinom(n = n2, mu = mean2, size = dispersion2)
     )
-    if(data.frame) {
+    if (data.frame) {
       res <- list_to_df(res)
     }
   }
@@ -508,5 +505,3 @@ sim_nb_two_sample <- function(
   #-----------------------------------------------------------------------------
   res
 }
-
-utils::globalVariables(c("data"))

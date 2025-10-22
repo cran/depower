@@ -1,5 +1,6 @@
 #-------------------------------------------------------------------------------
-# Overhead of power()? There, but acceptable.
+# Overhead of power().
+# Adds 1.2-1.3 times additional time compared to direct computation.
 #-------------------------------------------------------------------------------
 set.seed(1234)
 data <- sim_log_lognormal(

@@ -4,7 +4,7 @@
 \alias{lrt_bnb}
 \title{Likelihood ratio test for BNB ratio of means}
 \usage{
-lrt_bnb(data, ratio_null = 1, ...)
+lrt_bnb(data, ratio_null = 1, distribution = asymptotic(), ...)
 }
 \arguments{
 \item{data}{(list)\cr
@@ -18,6 +18,13 @@ output from \code{\link[=sim_bnb]{sim_bnb()}}.}
 \item{ratio_null}{(Scalar numeric: \code{1}; \verb{(0, Inf)})\cr
 The ratio of means assumed under the null hypothesis (sample 2 / sample 1).
 Typically, \code{ratio_null = 1} (no difference). See 'Details' for
+additional information.}
+
+\item{distribution}{(function: \code{\link[=asymptotic]{asymptotic()}} or
+\code{\link[=simulated]{simulated()}})\cr
+The method used to define the distribution of the \eqn{\chi^2}
+likelihood ratio test statistic under the null hypothesis. See
+'Details' and \code{\link[=asymptotic]{asymptotic()}} or \code{\link[=simulated]{simulated()}} for
 additional information.}
 
 \item{...}{Optional arguments passed to the MLE function \code{\link[=mle_bnb]{mle_bnb()}}.}
@@ -95,10 +102,12 @@ The LRT statistic is
 
 Under \eqn{H_{null}}, the LRT test statistic is asymptotically distributed
 as \eqn{\chi^2_1}. The approximate level \eqn{\alpha} test rejects
-\eqn{H_{null}} if \eqn{\lambda \geq \chi^2_1(1 - \alpha)}. Note that
+\eqn{H_{null}} if \eqn{\lambda \geq \chi^2_1(1 - \alpha)}. However,
 the asymptotic critical value is known to underestimate the exact critical
-value. Hence, the nominal significance level may not be achieved for small
-sample sizes (possibly \eqn{n \leq 10} or \eqn{n \leq 50}).
+value and the nominal significance level may not be achieved for small sample
+sizes. Argument \code{distribution} allows control of the distribution of
+the \eqn{\chi^2_1} test statistic under the null hypothesis by use of
+functions \code{\link[=asymptotic]{asymptotic()}} and \code{\link[=simulated]{simulated()}}.
 }
 \examples{
 #----------------------------------------------------------------------------
@@ -120,4 +129,7 @@ sim_bnb(
 \insertRef{rettiganti_2012}{depower}
 
 \insertRef{aban_2009}{depower}
+}
+\seealso{
+\code{\link[=wald_test_bnb]{wald_test_bnb()}}
 }

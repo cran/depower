@@ -3,8 +3,8 @@
 #' The negative log-likelihood for bivariate negative binomial outcomes.
 #'
 #' @details
-#' These functions are primarily designed for speed in simulation. Arguments are
-#' not checked.
+#' These functions are primarily designed for speed in simulation. Limited
+#' argument validation is performed.
 #'
 #' Suppose \eqn{X_1 \mid G = g \sim \text{Poisson}(\mu g)} and
 #' \eqn{X_2 \mid G = g \sim \text{Poisson}(r \mu g)} where
@@ -24,7 +24,7 @@
 #' \begin{aligned}
 #' L(r, \mu, \theta \mid X_1, X_2) = & \left( \frac{\theta^{\theta}}{\Gamma(\theta)} \right)^{n} \times \\
 #'   & \frac{\mu^{\sum{x_{1i}} + \sum{x_{2i}}}}{\prod_{i=1}^{n} x_{1i}!} \frac{r^{\sum{x_{2i}}}}{\prod_{i=1}^{n} x_{2i}!} \times \\
-#'   & \frac{\prod_{i = 1}^{n} \Gamma(x_{1i} + x_{2i} + \theta)}{(\mu + r \mu + \theta)^{\sum x_{1i} + x_{2i} + \theta}}
+#'   & \frac{\prod_{i = 1}^{n} \Gamma(x_{1i} + x_{2i} + \theta)}{(\mu + r \mu + \theta)^{\sum (x_{1i} + x_{2i} + \theta)}}
 #' \end{aligned}
 #' }
 #'
@@ -47,17 +47,16 @@
 #'
 #' \insertRef{aban_2009}{depower}
 #'
-#' @param param (numeric)\cr
-#'        The vector of initial values for BNB parameters. Must be in the
-#'        following order for each scenario:
-#' - Null: `c(mean1, dispersion)`
+#' @param param (numeric: `(0, Inf)`)\cr
+#'        A vector of BNB parameters. Must be in the following order for each scenario:
+#' - Null: `c(mean, dispersion)`
 #' - Alternative: `c(mean1, mean2, dispersion)`
 #'
 #' for samples 1 and 2.
-#' @param value1 (numeric)\cr
+#' @param value1 (integer: `(0, Inf)`)\cr
 #'        The vector of BNB values from sample 1. Must be sorted by the
 #'        subject/item index. Must not contain \link[base]{NA}s.
-#' @param value2 (numeric)\cr
+#' @param value2 (integer: `(0, Inf)`)\cr
 #'        The vector of BNB values from sample 2. Must be sorted by the
 #'        subject/item index. Must not contain \link[base]{NA}s.
 #' @param ratio_null (Scalar numeric: `(0, Inf)`)\cr
@@ -66,8 +65,7 @@
 #'
 #' @return Scalar numeric negative log-likelihood.
 #'
-#' @seealso [depower::sim_nb()], [stats::nlminb()], [stats::nlm()],
-#'          [stats::optim()]
+#' @seealso [depower::mle_bnb]
 #'
 #' @examples
 #' #----------------------------------------------------------------------------
@@ -105,19 +103,22 @@ nll_bnb_null <- function(param, value1, value2, ratio_null) {
   mu1 <- param[1L]
   dispersion <- param[2L]
   n <- length(value1)
-  mean1 <- fmean(value1, n = n)
-  mean2 <- fmean(value2, n = n)
+  xbar1 <- fmean(value1, n = n)
+  xbar2 <- fmean(value2, n = n)
   sum1 <- sum(lgamma(value1 + value2 + dispersion))
   sum2 <- sum(lgamma(value1 + 1L))
   sum3 <- sum(lgamma(value2 + 1L))
 
-  ll <- n * (dispersion * log(dispersion) - lgamma(dispersion)) +
-        n * (mean1 + mean2) * log(mu1) +
-        n * mean2 * log(ratio_null) +
-        sum1 -
-        n * (mean1 + mean2 + dispersion) * log(mu1 + ratio_null * mu1 + dispersion) -
-        sum2 -
-        sum3
+  ll <- n *
+    (dispersion * log(dispersion) - lgamma(dispersion)) +
+    n * (xbar1 + xbar2) * log(mu1) +
+    n * xbar2 * log(ratio_null) +
+    sum1 -
+    n *
+      (xbar1 + xbar2 + dispersion) *
+      log(mu1 + ratio_null * mu1 + dispersion) -
+    sum2 -
+    sum3
 
   # Remove names and return negative log-likelihood
   as.numeric(-ll)
@@ -130,19 +131,20 @@ nll_bnb_alt <- function(param, value1, value2) {
   mu2 <- param[2L]
   dispersion <- param[3L]
   n <- length(value1)
-  mean1 <- fmean(x = value1, n = n)
-  mean2 <- fmean(x = value2, n = n)
+  xbar1 <- fmean(x = value1, n = n)
+  xbar2 <- fmean(x = value2, n = n)
   sum1 <- sum(lgamma(value1 + value2 + dispersion))
   sum2 <- sum(lgamma(value1 + 1L))
   sum3 <- sum(lgamma(value2 + 1L))
 
-  ll <- n * (dispersion * log(dispersion) - lgamma(dispersion)) +
-        n * mean1 * log(mu1) +
-        n * mean2 * log(mu2) +
-        sum1 -
-        n * (mean1 + mean2 + dispersion) * log(mu1 + mu2 + dispersion) -
-        sum2 -
-        sum3
+  ll <- n *
+    (dispersion * log(dispersion) - lgamma(dispersion)) +
+    n * xbar1 * log(mu1) +
+    n * xbar2 * log(mu2) +
+    sum1 -
+    n * (xbar1 + xbar2 + dispersion) * log(mu1 + mu2 + dispersion) -
+    sum2 -
+    sum3
 
   # Remove names and return negative log-likelihood
   as.numeric(-ll)

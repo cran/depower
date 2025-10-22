@@ -54,7 +54,7 @@ A method to calculate power for objects returned by \code{\link[=sim_log_lognorm
 Power is calculated as the proportion of hypothesis tests which result in a
 p-value less than or equal to \code{alpha}. e.g.
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{sum(p <= alpha, na.rm = TRUE) / nsims
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{sum(p <= alpha) / nsims
 }\if{html}{\out{</div>}}
 
 Power is defined as the expected probability of rejecting the null hypothesis
@@ -93,7 +93,7 @@ data <- sim_nb(
   nsims = 200
 )
 
-# ... is empty, so a an appropriate default function will be provided
+# ... is empty, so an appropriate default function will be provided
 power(data)
 
 # This is equivalent to leaving ... empty
@@ -196,7 +196,7 @@ simulations for power results.
 #----------------------------------------------------------------------------
 library(depower)
 
-# Power for independent two-sample t-Test
+# Power for independent two-sample t-test
 set.seed(1234)
 data <- sim_log_lognormal(
   n1 = 20,
@@ -218,7 +218,7 @@ power(
   alpha = 0.01
 )
 
-# Power for dependent two-sample t-Test
+# Power for dependent two-sample t-test
 set.seed(1234)
 sim_log_lognormal(
   n1 = 20,
@@ -231,7 +231,7 @@ sim_log_lognormal(
 ) |>
   power()
 
-# Power for mixed-type two-sample t-Test
+# Power for mixed-type two-sample t-test
 set.seed(1234)
 sim_log_lognormal(
   n1 = 20,
@@ -244,7 +244,7 @@ sim_log_lognormal(
 ) |>
   power()
 
-# Power for one-sample t-Test
+# Power for one-sample t-test
 set.seed(1234)
 sim_log_lognormal(
   n1 = 20,

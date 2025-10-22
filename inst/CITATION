@@ -13,9 +13,10 @@ bibentry(
   ),
   title = "depower: Power Analysis for Differential Expression Studies",
   year = year,
-  note = vers,
+  note = note,
   url = "https://cran.r-project.org/package=depower",
-  key= "depower",
+  key = "depower",
+  doi = "10.32614/CRAN.package.depower",
   header = "To cite depower in publications, please use:",
   textVersion = paste0(
     "Klamer, B. G., & Yu, L. (", year, "). ",

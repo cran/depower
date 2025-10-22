@@ -126,22 +126,22 @@ NULL
 #' @export
 #' @rdname mle_nb
 mle_nb_null <- function(
-    data,
-    equal_dispersion = FALSE,
-    ratio_null = 1,
-    method = "nlm_constrained",
-    ...
+  data,
+  equal_dispersion = FALSE,
+  ratio_null = 1,
+  method = "nlm_constrained",
+  ...
 ) {
   #-----------------------------------------------------------------------------
   # Check args
   #-----------------------------------------------------------------------------
-  if(!(is.list(data) && length(data) == 2L)) {
+  if (!(is.list(data) && length(data) == 2L)) {
     stop("Argument 'data' must be a list with 2 elements.")
   }
-  if(!(is.logical(equal_dispersion) && length(equal_dispersion) == 1L)) {
+  if (!(is.logical(equal_dispersion) && length(equal_dispersion) == 1L)) {
     stop("Argument 'equal_dispersion' must be a scalar logical.")
   }
-  if(!(length(ratio_null) == 1L && ratio_null > 0)) {
+  if (!(length(ratio_null) == 1L && ratio_null > 0)) {
     stop("Argument 'ratio_null' must be a positive scalar numeric.")
   }
 
@@ -151,16 +151,16 @@ mle_nb_null <- function(
   value1 <- data[[1L]]
   value2 <- data[[2L]]
 
-  if(anyNA(value1)) {
+  if (anyNA(value1)) {
     value1 <- value1[!is.na(value1)]
   }
-  if(anyNA(value2)) {
+  if (anyNA(value2)) {
     value2 <- value2[!is.na(value2)]
   }
 
   init_mean1 <- fmean(value1)
 
-  if(equal_dispersion) {
+  if (equal_dispersion) {
     # dispersion = (mean * p) / (1 - p)
     # Var(X) = mean + mean^2/dispersion
     init_dispersion <- 2
@@ -171,7 +171,11 @@ mle_nb_null <- function(
     # Var(X) = mean + mean^2/dispersion
     init_dispersion1 <- 2
     init_dispersion2 <- 2
-    param = c(mean1 = init_mean1, dispersion1 = init_dispersion1, dispersion2 = init_dispersion2)
+    param = c(
+      mean1 = init_mean1,
+      dispersion1 = init_dispersion1,
+      dispersion2 = init_dispersion2
+    )
     nparams <- 3L
   }
 
@@ -197,7 +201,7 @@ mle_nb_null <- function(
   mean1 <- as.numeric(mle[["estimate"]][1L])
   mean2 <- mean1 * ratio_null
 
-  if(equal_dispersion) {
+  if (equal_dispersion) {
     dispersion1 <- mle[["estimate"]][2L]
     dispersion2 <- dispersion1
   } else {
@@ -228,14 +232,19 @@ mle_nb_null <- function(
 
 #' @export
 #' @rdname mle_nb
-mle_nb_alt <- function(data, equal_dispersion = FALSE, method = "nlm_constrained", ...) {
+mle_nb_alt <- function(
+  data,
+  equal_dispersion = FALSE,
+  method = "nlm_constrained",
+  ...
+) {
   #-----------------------------------------------------------------------------
   # Check args
   #-----------------------------------------------------------------------------
-  if(!(is.list(data) && length(data) == 2L)) {
+  if (!(is.list(data) && length(data) == 2L)) {
     stop("Argument 'data' must be a list with 2 elements.")
   }
-  if(!(is.logical(equal_dispersion) && length(equal_dispersion) == 1L)) {
+  if (!(is.logical(equal_dispersion) && length(equal_dispersion) == 1L)) {
     stop("Argument 'equal_dispersion' must be a scalar logical.")
   }
 
@@ -245,28 +254,37 @@ mle_nb_alt <- function(data, equal_dispersion = FALSE, method = "nlm_constrained
   value1 <- data[[1L]]
   value2 <- data[[2L]]
 
-  if(anyNA(value1)) {
+  if (anyNA(value1)) {
     value1 <- value1[!is.na(value1)]
   }
-  if(anyNA(value2)) {
+  if (anyNA(value2)) {
     value2 <- value2[!is.na(value2)]
   }
 
   init_mean1 <- fmean(value1)
   init_mean2 <- fmean(value2)
 
-  if(equal_dispersion) {
+  if (equal_dispersion) {
     # dispersion = (mean * p) / (1 - p)
     # Var(X) = mean + mean^2/dispersion
     init_dispersion <- 2
-    param = c(mean1 = init_mean1, mean2 = init_mean2, dispersion = init_dispersion)
+    param = c(
+      mean1 = init_mean1,
+      mean2 = init_mean2,
+      dispersion = init_dispersion
+    )
     nparams <- 3L
   } else {
     # dispersion = (mean * p) / (1 - p)
     # Var(X) = mean + mean^2/dispersion
     init_dispersion1 <- 2
     init_dispersion2 <- 2
-    param = c(mean1 = init_mean1, mean2 = init_mean2, dispersion1 = init_dispersion1, dispersion2 = init_dispersion2)
+    param = c(
+      mean1 = init_mean1,
+      mean2 = init_mean2,
+      dispersion1 = init_dispersion1,
+      dispersion2 = init_dispersion2
+    )
     nparams <- 4L
   }
 
@@ -292,7 +310,7 @@ mle_nb_alt <- function(data, equal_dispersion = FALSE, method = "nlm_constrained
   mean2 = as.numeric(mle[["estimate"]][2L])
   ratio = mean2 / mean1
 
-  if(equal_dispersion) {
+  if (equal_dispersion) {
     dispersion1 <- mle[["estimate"]][3L]
     dispersion2 <- dispersion1
   } else {

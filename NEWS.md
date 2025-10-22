@@ -1,3 +1,28 @@
+# depower 2025.10.21
+
+### New Features
+
+- Add functions `asymptotic()` and `simulated()` for specification of type of
+  test.
+- Add argument `distribution` to functions:
+    - `wald_test_nb()`
+    - `wald_test_bnb()`
+    - `lrt_nb()`
+    - `lrt_bnb()`
+    
+  for control of running an asymptotic, randomization, or parametric simulation test.
+
+### Bug Fixes
+
+- Fix bug where `equal_dispersion` argument in function `lrt_nb()` was not passed downstream and instead fixed to `FALSE`.
+- Fix calculation of confidence limits for `mean2` and `dispersion2` in functions `glm_nb()`, `glmm_bnb()`, and `glmm_poisson()`.
+
+### Other Updates
+
+- Add and update tolerances in tests.
+- General improvements in documentation.
+- General improvements in code.
+
 # depower 2025.1.20
 
 - Fix typos in documentation.

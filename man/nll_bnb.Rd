@@ -11,21 +11,20 @@ nll_bnb_null(param, value1, value2, ratio_null)
 nll_bnb_alt(param, value1, value2)
 }
 \arguments{
-\item{param}{(numeric)\cr
-The vector of initial values for BNB parameters. Must be in the
-following order for each scenario:
+\item{param}{(numeric: \verb{(0, Inf)})\cr
+A vector of BNB parameters. Must be in the following order for each scenario:
 \itemize{
-\item Null: \code{c(mean1, dispersion)}
+\item Null: \code{c(mean, dispersion)}
 \item Alternative: \code{c(mean1, mean2, dispersion)}
 }
 
 for samples 1 and 2.}
 
-\item{value1}{(numeric)\cr
+\item{value1}{(integer: \verb{(0, Inf)})\cr
 The vector of BNB values from sample 1. Must be sorted by the
 subject/item index. Must not contain \link[base]{NA}s.}
 
-\item{value2}{(numeric)\cr
+\item{value2}{(integer: \verb{(0, Inf)})\cr
 The vector of BNB values from sample 2. Must be sorted by the
 subject/item index. Must not contain \link[base]{NA}s.}
 
@@ -40,8 +39,8 @@ Scalar numeric negative log-likelihood.
 The negative log-likelihood for bivariate negative binomial outcomes.
 }
 \details{
-These functions are primarily designed for speed in simulation. Arguments are
-not checked.
+These functions are primarily designed for speed in simulation. Limited
+argument validation is performed.
 
 Suppose \eqn{X_1 \mid G = g \sim \text{Poisson}(\mu g)} and
 \eqn{X_2 \mid G = g \sim \text{Poisson}(r \mu g)} where
@@ -61,7 +60,7 @@ The likelihood is
 \begin{aligned}
 L(r, \mu, \theta \mid X_1, X_2) = & \left( \frac{\theta^{\theta}}{\Gamma(\theta)} \right)^{n} \times \\
   & \frac{\mu^{\sum{x_{1i}} + \sum{x_{2i}}}}{\prod_{i=1}^{n} x_{1i}!} \frac{r^{\sum{x_{2i}}}}{\prod_{i=1}^{n} x_{2i}!} \times \\
-  & \frac{\prod_{i = 1}^{n} \Gamma(x_{1i} + x_{2i} + \theta)}{(\mu + r \mu + \theta)^{\sum x_{1i} + x_{2i} + \theta}}
+  & \frac{\prod_{i = 1}^{n} \Gamma(x_{1i} + x_{2i} + \theta)}{(\mu + r \mu + \theta)^{\sum (x_{1i} + x_{2i} + \theta)}}
 \end{aligned}
 }
 
@@ -113,6 +112,5 @@ nll_bnb_null(
 \insertRef{aban_2009}{depower}
 }
 \seealso{
-\code{\link[=sim_nb]{sim_nb()}}, \code{\link[stats:nlminb]{stats::nlminb()}}, \code{\link[stats:nlm]{stats::nlm()}},
-\code{\link[stats:optim]{stats::optim()}}
+\link{mle_bnb}
 }

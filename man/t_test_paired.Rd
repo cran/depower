@@ -158,5 +158,5 @@ t_test2
 \insertRef{johnson_1994}{depower}
 }
 \seealso{
-\code{\link[stats:t.test]{stats::t.test()}}
+\code{\link[=t_test_welch]{t_test_welch()}}
 }

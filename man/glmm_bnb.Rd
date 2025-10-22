@@ -20,8 +20,9 @@ The statistical method used for the test results. \code{test = "wald"}
 performs a Wald test and optionally the Wald confidence intervals.
 \code{test = "lrt"} performs a likelihood ratio test and optionally
 the profile likelihood confidence intervals (means and ratio). The
-Wald interval is always used for the dispersion and standard deviation
-of the item (subject) random intercept.}
+Wald confidence interval is always used for the limits of the mean of
+sample 2, dispersion, and standard deviation of the item (subject)
+random intercept.}
 
 \item{ci_level}{(Scalar numeric: \code{NULL}; \verb{(0, 1)})\cr
 If \code{NULL}, confidence intervals are set as \code{NA}. If in \verb{(0, 1)},
@@ -52,8 +53,8 @@ Slot \tab Subslot \tab Name \tab Description \cr
 
 6 \tab   \tab \code{mean2}    \tab Estimated mean of sample 2. \cr
 6 \tab 1 \tab \code{estimate} \tab Point estimate. \cr
-6 \tab 2 \tab \code{lower}    \tab Confidence interval lower bound. \cr
-6 \tab 3 \tab \code{upper}    \tab Confidence interval upper bound. \cr
+6 \tab 2 \tab \code{lower}    \tab Wald confidence interval lower bound. \cr
+6 \tab 3 \tab \code{upper}    \tab Wald confidence interval upper bound. \cr
 
 7 \tab   \tab \code{dispersion} \tab Estimated dispersion. \cr
 7 \tab 1 \tab \code{estimate}   \tab Point estimate. \cr
@@ -157,13 +158,13 @@ mod_alt <- glmmTMB::glmmTMB(
   formula = value ~ condition + (1 | item),
   data = d,
   dispformula = ~ 1,
-  family = glmmTMB::nbinom2,
+  family = glmmTMB::nbinom2
 )
 mod_null <- glmmTMB::glmmTMB(
   formula = value ~ 1 + (1 | item),
   data = d,
   dispformula = ~ 1,
-  family = glmmTMB::nbinom2,
+  family = glmmTMB::nbinom2
 )
 
 lrt_chisq <- as.numeric(-2 * (logLik(mod_null) - logLik(mod_alt)))
@@ -180,5 +181,7 @@ anova(mod_null, mod_alt)
 \insertRef{hilbe_2014}{depower}
 }
 \seealso{
-\code{\link[glmmTMB:glmmTMB]{glmmTMB::glmmTMB()}}
+\code{\link[=wald_test_bnb]{wald_test_bnb()}},
+\code{\link[=lrt_bnb]{lrt_bnb()}},
+\code{\link[=glmm_poisson]{glmm_poisson()}}
 }

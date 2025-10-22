@@ -4,7 +4,13 @@
 \alias{lrt_nb}
 \title{Likelihood ratio test for NB ratio of means}
 \usage{
-lrt_nb(data, equal_dispersion = FALSE, ratio_null = 1, ...)
+lrt_nb(
+  data,
+  equal_dispersion = FALSE,
+  ratio_null = 1,
+  distribution = asymptotic(),
+  ...
+)
 }
 \arguments{
 \item{data}{(list)\cr
@@ -22,6 +28,13 @@ calculated assuming different dispersions.}
 \item{ratio_null}{(Scalar numeric: \code{1}; \verb{(0, Inf)})\cr
 The ratio of means assumed under the null hypothesis (group 2 / group 1).
 Typically \code{ratio_null = 1} (no difference). See 'Details' for
+additional information.}
+
+\item{distribution}{(function: \code{\link[=asymptotic]{asymptotic()}} or
+\code{\link[=simulated]{simulated()}})\cr
+The method used to define the distribution of the \eqn{\chi^2}
+likelihood ratio test statistic under the null hypothesis. See
+'Details' and \code{\link[=asymptotic]{asymptotic()}} or \code{\link[=simulated]{simulated()}} for
 additional information.}
 
 \item{...}{Optional arguments passed to the MLE function \code{\link[=mle_nb]{mle_nb()}}.}
@@ -98,10 +111,41 @@ The LRT statistic is
 
 Under \eqn{H_{null}}, the LRT test statistic is asymptotically distributed
 as \eqn{\chi^2_1}. The approximate level \eqn{\alpha} test rejects
-\eqn{H_{null}} if \eqn{\lambda \geq \chi^2_1(1 - \alpha)}. Note that
+\eqn{H_{null}} if \eqn{\lambda \geq \chi^2_1(1 - \alpha)}. However,
 the asymptotic critical value is known to underestimate the exact critical
-value. Hence, the nominal significance level may not be achieved for small
-sample sizes (possibly \eqn{n \leq 10} or \eqn{n \leq 50}).
+value and the nominal significance level may not be achieved for small sample
+sizes. Argument \code{distribution} allows control of the distribution of
+the \eqn{\chi^2_1} test statistic under the null hypothesis by use of
+functions \code{\link[=asymptotic]{asymptotic()}} and \code{\link[=simulated]{simulated()}}.
+
+Note that standalone use of this function with \code{equal_dispersion = FALSE}
+and \code{distribution = simulated()}, e.g.
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{data |>
+  lrt_nb(
+    equal_dispersion = FALSE,
+    distribution = simulated()
+  )
+}\if{html}{\out{</div>}}
+
+results in a nonparametric randomization test based on label permutation.
+This violates the assumption of exchangeability for the randomization test
+because the labels are not exchangeable when the null hypothesis assumes
+unequal dispersions. However, used inside \code{\link[=power]{power()}}, e.g.
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{data |>
+  power(
+    lrt_nb(
+      equal_dispersion = FALSE,
+      distribution = simulated()
+    )
+  )
+}\if{html}{\out{</div>}}
+
+results in parametric resampling and no label permutation in performed.
+Thus, setting \code{equal_dispersion = FALSE} and \code{distribution = simulated()} is
+only recommended when \code{\link[=lrt_nb]{lrt_nb()}} is used inside of
+\code{\link[=power]{power()}}. See also, \code{\link[=simulated]{simulated()}}.
 }
 \examples{
 #----------------------------------------------------------------------------
@@ -125,4 +169,7 @@ sim_nb(
 \insertRef{rettiganti_2012}{depower}
 
 \insertRef{aban_2009}{depower}
+}
+\seealso{
+\code{\link[=wald_test_nb]{wald_test_nb()}}
 }

@@ -51,7 +51,9 @@
 #'        The statistical method used for the test results. `test = "wald"`
 #'        performs a Wald test and optionally the Wald confidence intervals.
 #'        `test = "lrt"` performs a likelihood ratio test and optionally
-#'        the profile likelihood confidence intervals.
+#'        the profile likelihood confidence intervals. Wald confidence intervals
+#'        are always returned for the limits of the mean of sample 2 and, when
+#'        `equal_dispersion=FALSE`, for the limits of the dispersion of sample 2.
 #' @param ci_level (Scalar numeric: `NULL`; `(0, 1)`)\cr
 #'        If `NULL`, confidence intervals are set as `NA`. If in `(0, 1)`,
 #'        confidence intervals are calculated at the specified level.
@@ -78,8 +80,8 @@
 #'
 #'   6 \tab   \tab `mean2`    \tab Estimated mean of group 2. \cr
 #'   6 \tab 1 \tab `estimate` \tab Point estimate. \cr
-#'   6 \tab 2 \tab `lower`    \tab Confidence interval lower bound. \cr
-#'   6 \tab 3 \tab `upper`    \tab Confidence interval upper bound. \cr
+#'   6 \tab 2 \tab `lower`    \tab Wald confidence interval lower bound. \cr
+#'   6 \tab 3 \tab `upper`    \tab Wald confidence interval upper bound. \cr
 #'
 #'   7 \tab   \tab `dispersion1` \tab Estimated dispersion of group 1. \cr
 #'   7 \tab 1 \tab `estimate`    \tab Point estimate. \cr
@@ -88,8 +90,8 @@
 #'
 #'   8 \tab   \tab `dispersion2` \tab Estimated dispersion of group 2. \cr
 #'   8 \tab 1 \tab `estimate`    \tab Point estimate. \cr
-#'   8 \tab 2 \tab `lower`       \tab Confidence interval lower bound. \cr
-#'   8 \tab 3 \tab `upper`       \tab Confidence interval upper bound. \cr
+#'   8 \tab 2 \tab `lower`       \tab Wald confidence interval lower bound. \cr
+#'   8 \tab 3 \tab `upper`       \tab Wald confidence interval upper bound. \cr
 #'
 #'   9 \tab \tab `n1` \tab Sample size of group 1. \cr
 #'   10 \tab \tab `n2` \tab Sample size of group 2. \cr
@@ -103,7 +105,7 @@
 #'   17 \tab \tab `convergence` \tab Information about convergence.
 #' }
 #'
-#' @seealso [glmmTMB::glmmTMB()]
+#' @seealso [depower::wald_test_nb()], [depower::lrt_nb()]
 #'
 #' @examples
 #' #----------------------------------------------------------------------------
@@ -146,13 +148,13 @@
 #'   formula = value ~ condition,
 #'   data = d,
 #'   dispformula = ~ condition,
-#'   family = glmmTMB::nbinom2,
+#'   family = glmmTMB::nbinom2
 #' )
 #' mod_null <- glmmTMB::glmmTMB(
 #'   formula = value ~ 1,
 #'   data = d,
 #'   dispformula = ~ condition,
-#'   family = glmmTMB::nbinom2,
+#'   family = glmmTMB::nbinom2
 #' )
 #'
 #' lrt_chisq <- as.numeric(-2 * (logLik(mod_null) - logLik(mod_alt)))
@@ -162,50 +164,55 @@
 #'
 #' anova(mod_null, mod_alt)
 #'
-#' @importFrom stats logLik pchisq confint
+#' @importFrom stats logLik pchisq confint vcov qnorm
 #'
 #' @export
 glm_nb <- function(
-    data,
-    equal_dispersion = FALSE,
-    test = "wald",
-    ci_level = NULL,
-    ...
+  data,
+  equal_dispersion = FALSE,
+  test = "wald",
+  ci_level = NULL,
+  ...
 ) {
   #-----------------------------------------------------------------------------
   # Check arguments
   #-----------------------------------------------------------------------------
-  if(!(is.list(data) && length(data) == 2L)) {
+  if (!(is.list(data) && length(data) == 2L)) {
     stop("Argument 'data' must be a list with 2 elements.")
   }
 
-  if(anyNA(data[[1L]]) || anyNA(data[[2L]])) {
+  if (anyNA(data[[1L]]) || anyNA(data[[2L]])) {
     data[[1L]] <- data[[1L]][!is.na(data[[1L]])]
     data[[2L]] <- data[[2L]][!is.na(data[[2L]])]
   }
 
   n1 <- length(data[[1L]])
   n2 <- length(data[[2L]])
-  if(n1 < 2L || n2 < 2L) {
+  if (n1 < 2L || n2 < 2L) {
     stop("Argument 'data' must have sample size greater than 1.")
   }
 
-  if(!(is.logical(equal_dispersion) && length(equal_dispersion) == 1L)) {
+  if (!(is.logical(equal_dispersion) && length(equal_dispersion) == 1L)) {
     stop("Argument 'equal_dispersion' must be a scalar logical.")
   }
 
   test <- tolower(test)
-  if(length(test) != 1L || !test %in% c("wald", "lrt")) {
+  if (length(test) != 1L || !test %in% c("wald", "lrt")) {
     stop("Argument 'test' must be a string from 'wald' or 'lrt'.")
   }
   is_lrt <- test == "lrt"
 
   has_ci <- !is.null(ci_level)
-  if(has_ci) {
-    if(!is.numeric(ci_level) || length(ci_level) != 1L || ci_level <= 0 || ci_level >= 1) {
+  if (has_ci) {
+    if (
+      !is.numeric(ci_level) ||
+        length(ci_level) != 1L ||
+        ci_level <= 0 ||
+        ci_level >= 1
+    ) {
       stop("Argument 'ci_level' must be a scalar numeric from (0, 1).")
     }
-    ci_method <- if(is_lrt) "profile" else "wald"
+    ci_method <- if (is_lrt) "profile" else "wald"
   }
 
   #-----------------------------------------------------------------------------
@@ -213,10 +220,10 @@ glm_nb <- function(
   #-----------------------------------------------------------------------------
   data <- list_to_df(data)
 
-  if(equal_dispersion) {
-    dispformula <- ~ 1
+  if (equal_dispersion) {
+    dispformula <- ~1
   } else {
-    dispformula <- ~ condition
+    dispformula <- ~condition
   }
 
   mod_alt <- glmmTMB(
@@ -226,7 +233,7 @@ glm_nb <- function(
     family = nbinom2,
     ...
   )
-  if(is_lrt) {
+  if (is_lrt) {
     mod_null <- glmmTMB(
       formula = value ~ 1,
       data = data,
@@ -241,7 +248,7 @@ glm_nb <- function(
   #-----------------------------------------------------------------------------
   mod_alt_summary <- summary(mod_alt)
 
-  chisq <- if(is_lrt) {
+  chisq <- if (is_lrt) {
     as.numeric(-2 * (logLik(mod_null) - logLik(mod_alt)))
   } else {
     mod_alt_summary$coefficients$cond["condition2", "z value"]^2
@@ -249,25 +256,24 @@ glm_nb <- function(
   df <- 1L
   p <- pchisq(chisq, df = df, lower.tail = FALSE)
 
-  mean1 <- exp(mod_alt_summary$coefficients$cond["(Intercept)", "Estimate"])
-  mean2 <- exp(
-    mod_alt_summary$coefficients$cond["(Intercept)", "Estimate"] +
-      mod_alt_summary$coefficients$cond["condition2", "Estimate"]
-  )
+  b0 <- mod_alt_summary$coefficients$cond["(Intercept)", "Estimate"]
+  b1 <- mod_alt_summary$coefficients$cond["condition2", "Estimate"]
+  mean1 <- exp(b0)
+  mean2 <- exp(b0 + b1)
+  ratio <- exp(b1)
 
-  ratio <- exp(mod_alt_summary$coefficients$cond["condition2", "Estimate"])
-
-  if(equal_dispersion) {
+  if (equal_dispersion) {
     dispersion1 <- mod_alt_summary$sigma
     dispersion2 <- mod_alt_summary$sigma
   } else {
-    dispersion1 <- exp(mod_alt_summary$coefficients$disp["(Intercept)", "Estimate"])
-    dispersion2 <- exp(mod_alt_summary$coefficients$disp["(Intercept)", "Estimate"] +
-                         mod_alt_summary$coefficients$disp["condition2", "Estimate"])
+    d0 <- mod_alt_summary$coefficients$disp["(Intercept)", "Estimate"]
+    d1 <- mod_alt_summary$coefficients$disp["condition2", "Estimate"]
+    dispersion1 <- exp(d0)
+    dispersion2 <- exp(d0 + d1)
   }
 
-  if(has_ci) {
-    if(equal_dispersion) {
+  if (has_ci) {
+    if (equal_dispersion) {
       beta_ci <- confint(
         object = mod_alt,
         parm = "beta_",
@@ -280,7 +286,8 @@ glm_nb <- function(
         level = ci_level,
         method = ci_method
       )
-      trans <- switch(dimnames(dispersion_ci)[[1]],
+      trans <- switch(
+        dimnames(dispersion_ci)[[1]],
         "sigma" = function(x) x,
         "d~(Intercept)" = exp,
         stop("Unable to select tranformation function for dispersion.")
@@ -300,13 +307,20 @@ glm_nb <- function(
     mean1_lower <- exp(beta_ci[1L, 1L])
     mean1_upper <- exp(beta_ci[1L, 2L])
 
-    mean2_lower <- exp(beta_ci[1L, 1L] + beta_ci[2L, 1L])
-    mean2_upper <- exp(beta_ci[1L, 2L] + beta_ci[2L, 2L])
+    # Wald CI for mean2 (profile likelihood not possible?)
+    Vcond <- vcov(mod_alt)$cond
+    se_m2 <- sqrt(Vcond[1, 1] + Vcond[2, 2] + 2 * Vcond[1, 2])
+    mean2_lower <- as.numeric(exp(
+      (b0 + b1) + qnorm((1 - ci_level) / 2) * se_m2
+    ))
+    mean2_upper <- as.numeric(exp(
+      (b0 + b1) + qnorm((1 + ci_level) / 2) * se_m2
+    ))
 
     ratio_lower <- exp(beta_ci[2L, 1L])
     ratio_upper <- exp(beta_ci[2L, 2L])
 
-    if(equal_dispersion) {
+    if (equal_dispersion) {
       dispersion1_lower <- trans(dispersion_ci[1L, 1L])
       dispersion1_upper <- trans(dispersion_ci[1L, 2L])
 
@@ -316,8 +330,15 @@ glm_nb <- function(
       dispersion1_lower <- exp(dispersion_ci[1L, 1L])
       dispersion1_upper <- exp(dispersion_ci[1L, 2L])
 
-      dispersion2_lower <- exp(dispersion_ci[1L, 1L] + dispersion_ci[2L, 1L])
-      dispersion2_upper <- exp(dispersion_ci[1L, 2L] + dispersion_ci[2L, 2L])
+      # Wald CI for dispersion2 (profile likelihood not possible?)
+      Vdisp <- vcov(mod_alt)$disp
+      se_d2 <- sqrt(Vdisp[1, 1] + Vdisp[2, 2] + 2 * Vdisp[1, 2])
+      dispersion2_lower <- as.numeric(exp(
+        (d0 + d1) + qnorm((1 - ci_level) / 2) * se_d2
+      ))
+      dispersion2_upper <- as.numeric(exp(
+        (d0 + d1) + qnorm((1 + ci_level) / 2) * se_d2
+      ))
     }
   } else {
     mean1_lower <- NA_real_
@@ -336,7 +357,7 @@ glm_nb <- function(
     dispersion2_upper <- NA_real_
   }
 
-  hessian <- if(!mod_alt$sdr$pdHess) {
+  hessian <- if (!mod_alt$sdr$pdHess) {
     "Warning: Hessian of fixed effects was not positive definite."
   } else {
     "Hessian appears to be positive definite."
@@ -356,8 +377,16 @@ glm_nb <- function(
     ratio = list(estimate = ratio, lower = ratio_lower, upper = ratio_upper),
     mean1 = list(estimate = mean1, lower = mean1_lower, upper = mean1_upper),
     mean2 = list(estimate = mean2, lower = mean2_lower, upper = mean2_upper),
-    dispersion1 = list(estimate = dispersion1, lower = dispersion1_lower, upper = dispersion1_upper),
-    dispersion2 = list(estimate = dispersion2, lower = dispersion2_lower, upper = dispersion2_upper),
+    dispersion1 = list(
+      estimate = dispersion1,
+      lower = dispersion1_lower,
+      upper = dispersion1_upper
+    ),
+    dispersion2 = list(
+      estimate = dispersion2,
+      lower = dispersion2_lower,
+      upper = dispersion2_upper
+    ),
     n1 = n1,
     n2 = n2,
     method = method,

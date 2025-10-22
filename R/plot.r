@@ -8,7 +8,7 @@
 #' because `plot.depower()` uses ggplot2, you can modify the plot as you
 #' normally would. For example:
 #'
-#' ```{r, plot_details, dev=c('svg','cairo_pdf'), fig.width=5, fig.height=4, fig.show='hide'}
+#' ```{r, plot_details, dev='png', dpi = 160, fig.width=5, fig.height=4, fig.show='hide'}
 #' set.seed(1234)
 #' sim_log_lognormal(
 #'   n1 = c(10, 15),
@@ -26,11 +26,11 @@
 #' ```
 #'
 #' \if{html}{\out{<div style="display: flex; justify-content: center; padding-top: 10px; padding-bottom: 10px;">
-#'   <img style="max-width: 100\%; height: auto;" src="figures/plot_details-1.svg" alt="Example of extending plot() with ggplot2 functions" />
+#'   <img style="max-width: 500px; width: 100\%; height: auto;" src="figures/plot_details-1.png" alt="Example of extending plot() with ggplot2 functions" />
 #' </div>}}
 #' \if{latex}{
 #'   \out{\begin{center}}
-#'   \figure{plot_details-1.pdf}{options: width=4in}
+#'   \figure{plot_details-1.png}{options: width=4in}
 #'   \out{\end{center}}
 #' }
 #'
@@ -160,30 +160,33 @@
 #' @export
 #' @rdname plot.depower
 plot.depower <- function(
-    x,
-    x_axis = NULL,
-    y_axis = NULL,
-    color = NULL,
-    facet_row = NULL,
-    facet_col = NULL,
-    hline = NULL,
-    caption = TRUE,
-    caption_width = 70L,
-    ...
+  x,
+  x_axis = NULL,
+  y_axis = NULL,
+  color = NULL,
+  facet_row = NULL,
+  facet_col = NULL,
+  hline = NULL,
+  caption = TRUE,
+  caption_width = 70L,
+  ...
 ) {
   #-----------------------------------------------------------------------------
   # Check arguments
   #-----------------------------------------------------------------------------
-  if(nrow(x) < 2L) {
+  if (nrow(x) < 2L) {
     stop("Argument 'x' must have at least 2 rows.")
   }
 
   # axis should be null or length==1
   axis <- list(
-    x_axis = x_axis, y_axis = y_axis, color = color,
-    facet_row = facet_row, facet_col = facet_col
+    x_axis = x_axis,
+    y_axis = y_axis,
+    color = color,
+    facet_row = facet_row,
+    facet_col = facet_col
   )
-  if(!all(lengths(axis) < 2L)) {
+  if (!all(lengths(axis) < 2L)) {
     idx_bad <- which(lengths(axis) > 1L)
     stop(paste0(
       "Argument(s) ",
@@ -193,10 +196,10 @@ plot.depower <- function(
   }
   # axis should be variable in x
   axis <- unlist(axis)
-  if(!is.null(axis)) {
+  if (!is.null(axis)) {
     axis <- axis[!is.na(axis)]
     are_bad <- !axis %in% names(x)
-    if(any(are_bad)) {
+    if (any(are_bad)) {
       stop(paste0(
         "Column(s) ",
         csw(axis[are_bad], and = TRUE),
@@ -204,15 +207,19 @@ plot.depower <- function(
       ))
     }
   }
-  if(!is.null(hline)) {
-    if(!is.numeric(hline) || length(hline) != 1L || hline <= 0 || hline >= 1) {
+  if (!is.null(hline)) {
+    if (!is.numeric(hline) || length(hline) != 1L || hline <= 0 || hline >= 1) {
       stop("Argument 'hline' must be a scalar numeric from (0,1).")
     }
   }
-  if(!(is.logical(caption) && length(caption) == 1L)) {
+  if (!(is.logical(caption) && length(caption) == 1L)) {
     stop("Argument 'caption' must be a scalar logical.")
   }
-  if(!(is.numeric(caption_width) && length(caption_width) == 1L && caption_width > 0)) {
+  if (
+    !(is.numeric(caption_width) &&
+      length(caption_width) == 1L &&
+      caption_width > 0)
+  ) {
     stop("Argument 'caption_width' must be a positive scalar numeric.")
   }
 
@@ -224,23 +231,33 @@ plot.depower <- function(
 
 #' @export
 plot.log_lognormal_independent_two_sample <- function(
-    x,
-    x_axis = NULL,
-    y_axis = NULL,
-    color = NULL,
-    facet_row = NULL,
-    facet_col = NULL,
-    hline = NULL,
-    caption = TRUE,
-    caption_width = 70L,
-    ...
+  x,
+  x_axis = NULL,
+  y_axis = NULL,
+  color = NULL,
+  facet_row = NULL,
+  facet_col = NULL,
+  hline = NULL,
+  caption = TRUE,
+  caption_width = 70L,
+  ...
 ) {
   #-----------------------------------------------------------------------------
   # Get axis labels
   #-----------------------------------------------------------------------------
   axis <- axis_builder(
     data = x,
-    sorted_axis = c("power", "n2", "n1", "ratio", "cv2", "cv1", "cor", "alpha", "test"),
+    sorted_axis = c(
+      "power",
+      "n2",
+      "n1",
+      "ratio",
+      "cv2",
+      "cv1",
+      "cor",
+      "alpha",
+      "test"
+    ),
     x_axis = x_axis,
     y_axis = y_axis,
     color = color,
@@ -275,30 +292,48 @@ plot.log_lognormal_independent_two_sample <- function(
     aes(x = .data[[x_axis]], y = .data[[y_axis]])
   ) +
     geom_builder(
-      plot_data$condition_at, x_axis, y_axis, color,
-      facet_row, facet_col, hline, caption, caption_width, plot_data$axis_labels
+      plot_data$condition_at,
+      x_axis,
+      y_axis,
+      color,
+      facet_row,
+      facet_col,
+      hline,
+      caption,
+      caption_width,
+      plot_data$axis_labels
     )
 }
 
 #' @export
 plot.log_lognormal_dependent_two_sample <- function(
-    x,
-    x_axis = NULL,
-    y_axis = NULL,
-    color = NULL,
-    facet_row = NULL,
-    facet_col = NULL,
-    hline = NULL,
-    caption = TRUE,
-    caption_width = 70L,
-    ...
+  x,
+  x_axis = NULL,
+  y_axis = NULL,
+  color = NULL,
+  facet_row = NULL,
+  facet_col = NULL,
+  hline = NULL,
+  caption = TRUE,
+  caption_width = 70L,
+  ...
 ) {
   #-----------------------------------------------------------------------------
   # Get axis labels
   #-----------------------------------------------------------------------------
   axis <- axis_builder(
     data = x,
-    sorted_axis = c("power", "n2", "n1", "ratio", "cv2", "cv1", "cor", "alpha", "test"),
+    sorted_axis = c(
+      "power",
+      "n2",
+      "n1",
+      "ratio",
+      "cv2",
+      "cv1",
+      "cor",
+      "alpha",
+      "test"
+    ),
     x_axis = x_axis,
     y_axis = y_axis,
     color = color,
@@ -317,7 +352,7 @@ plot.log_lognormal_dependent_two_sample <- function(
   #-----------------------------------------------------------------------------
   # two sample dependent t-test requires both groups have the same sample size.
   # So n1 or n2 should not be included in conditioning.
-  if(any(c(x_axis, y_axis, color, facet_row, facet_col) %in% c("n1", "n2"))) {
+  if (any(c(x_axis, y_axis, color, facet_row, facet_col) %in% c("n1", "n2"))) {
     exclude <- c("n1", "n2")
   } else {
     exclude <- NULL
@@ -335,7 +370,7 @@ plot.log_lognormal_dependent_two_sample <- function(
 
   # Add sample size descriptor to caption 'n1 = n2'
   # when n1 or n2 is used as axis/color/facet.
-  if(any(c(x_axis, y_axis, color, facet_row, facet_col) %in% c("n1", "n2"))) {
+  if (any(c(x_axis, y_axis, color, facet_row, facet_col) %in% c("n1", "n2"))) {
     plot_data$condition_at <- c("n1" = "n2", plot_data$condition_at)
   }
 
@@ -347,30 +382,48 @@ plot.log_lognormal_dependent_two_sample <- function(
     aes(x = .data[[x_axis]], y = .data[[y_axis]])
   ) +
     geom_builder(
-      plot_data$condition_at, x_axis, y_axis, color,
-      facet_row, facet_col, hline, caption, caption_width, plot_data$axis_labels
+      plot_data$condition_at,
+      x_axis,
+      y_axis,
+      color,
+      facet_row,
+      facet_col,
+      hline,
+      caption,
+      caption_width,
+      plot_data$axis_labels
     )
 }
 
 #' @export
 plot.log_lognormal_mixed_two_sample <- function(
-    x,
-    x_axis = NULL,
-    y_axis = NULL,
-    color = NULL,
-    facet_row = NULL,
-    facet_col = NULL,
-    hline = NULL,
-    caption = TRUE,
-    caption_width = 70L,
-    ...
+  x,
+  x_axis = NULL,
+  y_axis = NULL,
+  color = NULL,
+  facet_row = NULL,
+  facet_col = NULL,
+  hline = NULL,
+  caption = TRUE,
+  caption_width = 70L,
+  ...
 ) {
   #-----------------------------------------------------------------------------
   # Get axis labels
   #-----------------------------------------------------------------------------
   axis <- axis_builder(
     data = x,
-    sorted_axis = c("power", "n2", "n1", "ratio", "cv2", "cv1", "cor", "alpha", "test"),
+    sorted_axis = c(
+      "power",
+      "n2",
+      "n1",
+      "ratio",
+      "cv2",
+      "cv1",
+      "cor",
+      "alpha",
+      "test"
+    ),
     x_axis = x_axis,
     y_axis = y_axis,
     color = color,
@@ -392,9 +445,9 @@ plot.log_lognormal_mixed_two_sample <- function(
 
   # two sample dependent t-test requires both groups have the same sample size.
   # So n1 or n2 should not be included in conditioning.
-  if(
+  if (
     !all_cor_0 &&
-    (any(c(x_axis, y_axis, color, facet_row, facet_col) %in% c("n1", "n2")))
+      (any(c(x_axis, y_axis, color, facet_row, facet_col) %in% c("n1", "n2")))
   ) {
     exclude <- c("n1", "n2")
   } else {
@@ -403,7 +456,7 @@ plot.log_lognormal_mixed_two_sample <- function(
 
   # If we have mixed correlation=0 and correlation>0 data, we need to remove
   # the mixed sample size rows (i.e. n1 != n2) where cor=0.
-  if(any_cor_0 && !all_cor_0) {
+  if (any_cor_0 && !all_cor_0) {
     x <- x |>
       dplyr::filter(!(.data[["cor"]] == 0 & (.data[["n1"]] != .data[["n2"]])))
   }
@@ -420,9 +473,9 @@ plot.log_lognormal_mixed_two_sample <- function(
 
   # Add sample size descriptor to caption 'n1 = n2'
   # when n1 or n2 is used as axis/color/facet.
-  if(
+  if (
     !all_cor_0 &&
-    (any(c(x_axis, y_axis, color, facet_row, facet_col) %in% c("n1", "n2")))
+      (any(c(x_axis, y_axis, color, facet_row, facet_col) %in% c("n1", "n2")))
   ) {
     plot_data$condition_at <- c("n1" = "n2", plot_data$condition_at)
   }
@@ -435,23 +488,31 @@ plot.log_lognormal_mixed_two_sample <- function(
     aes(x = .data[[x_axis]], y = .data[[y_axis]])
   ) +
     geom_builder(
-      plot_data$condition_at, x_axis, y_axis, color,
-      facet_row, facet_col, hline, caption, caption_width, plot_data$axis_labels
+      plot_data$condition_at,
+      x_axis,
+      y_axis,
+      color,
+      facet_row,
+      facet_col,
+      hline,
+      caption,
+      caption_width,
+      plot_data$axis_labels
     )
 }
 
 #' @export
 plot.log_lognormal_one_sample <- function(
-    x,
-    x_axis = NULL,
-    y_axis = NULL,
-    color = NULL,
-    facet_row = NULL,
-    facet_col = NULL,
-    hline = NULL,
-    caption = TRUE,
-    caption_width = 70L,
-    ...
+  x,
+  x_axis = NULL,
+  y_axis = NULL,
+  color = NULL,
+  facet_row = NULL,
+  facet_col = NULL,
+  hline = NULL,
+  caption = TRUE,
+  caption_width = 70L,
+  ...
 ) {
   #-----------------------------------------------------------------------------
   # Get axis labels
@@ -493,31 +554,48 @@ plot.log_lognormal_one_sample <- function(
     aes(x = .data[[x_axis]], y = .data[[y_axis]])
   ) +
     geom_builder(
-      plot_data$condition_at, x_axis, y_axis, color,
-      facet_row, facet_col, hline, caption, caption_width, plot_data$axis_labels
+      plot_data$condition_at,
+      x_axis,
+      y_axis,
+      color,
+      facet_row,
+      facet_col,
+      hline,
+      caption,
+      caption_width,
+      plot_data$axis_labels
     )
 }
 
 #' @export
 plot.nb <- function(
-    x,
-    x_axis = NULL,
-    y_axis = NULL,
-    color = NULL,
-    facet_row = NULL,
-    facet_col = NULL,
-    hline = NULL,
-    caption = TRUE,
-    caption_width = 70L,
-    ...
+  x,
+  x_axis = NULL,
+  y_axis = NULL,
+  color = NULL,
+  facet_row = NULL,
+  facet_col = NULL,
+  hline = NULL,
+  caption = TRUE,
+  caption_width = 70L,
+  ...
 ) {
   #-----------------------------------------------------------------------------
   # Get axis labels
   #-----------------------------------------------------------------------------
   axis <- axis_builder(
     data = x,
-    sorted_axis = c("power", "n2", "n1", "ratio", "mean1", "dispersion2",
-                    "dispersion1", "alpha", "test"),
+    sorted_axis = c(
+      "power",
+      "n2",
+      "n1",
+      "ratio",
+      "mean1",
+      "dispersion2",
+      "dispersion1",
+      "alpha",
+      "test"
+    ),
     x_axis = x_axis,
     y_axis = y_axis,
     color = color,
@@ -552,30 +630,46 @@ plot.nb <- function(
     aes(x = .data[[x_axis]], y = .data[[y_axis]])
   ) +
     geom_builder(
-      plot_data$condition_at, x_axis, y_axis, color,
-      facet_row, facet_col, hline, caption, caption_width, plot_data$axis_labels
+      plot_data$condition_at,
+      x_axis,
+      y_axis,
+      color,
+      facet_row,
+      facet_col,
+      hline,
+      caption,
+      caption_width,
+      plot_data$axis_labels
     )
 }
 
 #' @export
 plot.bnb <- function(
-    x,
-    x_axis = NULL,
-    y_axis = NULL,
-    color = NULL,
-    facet_row = NULL,
-    facet_col = NULL,
-    hline = NULL,
-    caption = TRUE,
-    caption_width = 70L,
-    ...
+  x,
+  x_axis = NULL,
+  y_axis = NULL,
+  color = NULL,
+  facet_row = NULL,
+  facet_col = NULL,
+  hline = NULL,
+  caption = TRUE,
+  caption_width = 70L,
+  ...
 ) {
   #-----------------------------------------------------------------------------
   # Get axis labels
   #-----------------------------------------------------------------------------
   axis <- axis_builder(
     data = x,
-    sorted_axis = c("power", "n1", "ratio", "mean1", "dispersion1", "alpha", "test"),
+    sorted_axis = c(
+      "power",
+      "n1",
+      "ratio",
+      "mean1",
+      "dispersion1",
+      "alpha",
+      "test"
+    ),
     x_axis = x_axis,
     y_axis = y_axis,
     color = color,
@@ -594,7 +688,7 @@ plot.bnb <- function(
   #-----------------------------------------------------------------------------
   # BNB requires both groups have the same sample size.
   # So n1 or n2 should not be included in conditioning.
-  if(any(c(x_axis, y_axis, color, facet_row, facet_col) %in% c("n1", "n2"))) {
+  if (any(c(x_axis, y_axis, color, facet_row, facet_col) %in% c("n1", "n2"))) {
     exclude <- c("n1", "n2")
   } else {
     exclude <- NULL
@@ -612,7 +706,7 @@ plot.bnb <- function(
 
   # Add sample size descriptor to caption 'n1 = n2'
   # when n1 or n2 is used as axis/color/facet.
-  if(any(c(x_axis, y_axis, color, facet_row, facet_col) %in% c("n1", "n2"))) {
+  if (any(c(x_axis, y_axis, color, facet_row, facet_col) %in% c("n1", "n2"))) {
     plot_data$condition_at <- c("n1" = "n2", plot_data$condition_at)
   }
 
@@ -624,8 +718,16 @@ plot.bnb <- function(
     aes(x = .data[[x_axis]], y = .data[[y_axis]])
   ) +
     geom_builder(
-      plot_data$condition_at, x_axis, y_axis, color,
-      facet_row, facet_col, hline, caption, caption_width, plot_data$axis_labels
+      plot_data$condition_at,
+      x_axis,
+      y_axis,
+      color,
+      facet_row,
+      facet_col,
+      hline,
+      caption,
+      caption_width,
+      plot_data$axis_labels
     )
 }
 
@@ -636,13 +738,13 @@ plot.bnb <- function(
 # Select plot axis
 #-------------------------------------------------------------------------------
 axis_builder <- function(
-    data,
-    sorted_axis,
-    x_axis = NULL,
-    y_axis = NULL,
-    color = NULL,
-    facet_row = NULL,
-    facet_col = NULL
+  data,
+  sorted_axis,
+  x_axis = NULL,
+  y_axis = NULL,
+  color = NULL,
+  facet_row = NULL,
+  facet_col = NULL
 ) {
   # Prepare data used for axis assignment
   ## Create a vector of axis names sorted in the order we want to assign them.
@@ -655,7 +757,9 @@ axis_builder <- function(
   ## Number of unique values for each variable of interest.
   n_uniques <- vapply(
     X = data,
-    FUN = function(x) {length(unique(x))},
+    FUN = function(x) {
+      length(unique(x))
+    },
     FUN.VALUE = integer(1),
     USE.NAMES = TRUE
   )
@@ -665,7 +769,9 @@ axis_builder <- function(
   used <- c(y_axis, x_axis, color, facet_row, facet_col)
   ok_to_use <- vapply(
     X = sorted_axis,
-    FUN = function(x) {!x %in% used},
+    FUN = function(x) {
+      !x %in% used
+    },
     FUN.VALUE = logical(1),
     USE.NAMES = TRUE
   )
@@ -677,22 +783,22 @@ axis_builder <- function(
 
   ## In a dependent two-sample t-Test, n1 shouldn't be used when n2 is already
   ## in use, because they must be the same value.
-  if("cor" %in% names_data) {
+  if ("cor" %in% names_data) {
     ok_to_use_n1 <- all(data[["cor"]] == 0)
-    if(!ok_to_use_n1) {
+    if (!ok_to_use_n1) {
       axis <- axis[axis != "n1"]
     }
   }
   ## In a BNB test, n2 shouldn't be used when n1 is already in use, because they
   ## must be the same value.
-  if(inherits(data, "bnb")) {
+  if (inherits(data, "bnb")) {
     axis <- axis[axis != "n2"]
   }
 
   # Assign axis where needed
-  if(is.null(y_axis)) {
+  if (is.null(y_axis)) {
     # handle pathological cases
-    if(isTRUE(ok_to_use["power"]) && !"power" %in% axis) {
+    if (isTRUE(ok_to_use["power"]) && !"power" %in% axis) {
       y_axis <- "power"
     } else {
       y_axis <- axis[1L]
@@ -700,13 +806,13 @@ axis_builder <- function(
     }
   }
 
-  if(is.null(x_axis)) {
+  if (is.null(x_axis)) {
     # handle pathological cases
-    if(isTRUE(ok_to_use["n2"]) && is.na(axis[1L])) {
+    if (isTRUE(ok_to_use["n2"]) && is.na(axis[1L])) {
       x_axis <- "n2"
-    } else if(isTRUE(ok_to_use["n1"]) && is.na(axis[1L])) {
+    } else if (isTRUE(ok_to_use["n1"]) && is.na(axis[1L])) {
       x_axis <- "n1"
-    } else if(isTRUE(ok_to_use["n"]) && is.na(axis[1L])) {
+    } else if (isTRUE(ok_to_use["n"]) && is.na(axis[1L])) {
       x_axis <- "n"
     } else {
       x_axis <- axis[1L]
@@ -714,19 +820,26 @@ axis_builder <- function(
     }
   }
 
-  if(is.null(color)) {
+  if (is.null(color)) {
     color <- axis[1L]
     axis <- remove_used_axis(axis)
   }
 
-  if(is.null(facet_row)) {
+  if (is.null(facet_row)) {
     facet_row <- axis[1L]
     axis <- remove_used_axis(axis)
   }
 
-  if(is.null(facet_col)) {
+  if (is.null(facet_col)) {
     facet_col <- axis[1L]
     axis <- remove_used_axis(axis)
+  }
+
+  # pathological checks
+  if (is.na(x_axis) || is.na(y_axis)) {
+    stop(
+      "Could not automatically choose x or y axes. Please specify 'x_axis' and 'y_axis'."
+    )
   }
 
   # Return
@@ -743,13 +856,13 @@ axis_builder <- function(
 # Create list of data items for creating the plot
 #-------------------------------------------------------------------------------
 data_builder <- function(
-    data,
-    exclude = NULL,
-    x_axis,
-    y_axis,
-    color,
-    facet_row,
-    facet_col
+  data,
+  exclude = NULL,
+  x_axis,
+  y_axis,
+  color,
+  facet_row,
+  facet_col
 ) {
   # Combine factors and get labels
   axis <- c(x_axis, y_axis, color, facet_row, facet_col)
@@ -757,10 +870,14 @@ data_builder <- function(
 
   axis_labels <- vapply(
     X = data[axis],
-    FUN = function(x) {attr(x, "label", exact = TRUE)},
+    FUN = function(x) {
+      attr(x, "label", exact = TRUE)
+    },
     FUN.VALUE = character(1L),
     USE.NAMES = TRUE
   )
+  # Ensure axis labels don't show 'NA'
+  axis_labels[is.na(axis_labels)] <- ""
 
   #-----------------------------------------------------------------------------
   # Determine what we are conditioning on and get values to hold constant for
@@ -769,40 +886,66 @@ data_builder <- function(
   #-----------------------------------------------------------------------------
   # Exclude unnecessary variables.
   unused <- setdiff(names(data), axis)
-  unused <- unused[!unused %in% c("nsims", "data", "result")]
+  unused <- unused[!unused %in% c("nsims", "data", "result", "test_stat_null")]
 
   # Don't lose labels during mutate (middle.labelled)
   condition_at <- data |>
     summarize(across(.cols = all_of(unused), .fns = middle.labelled)) |>
     select(
       any_of(
-        c("n1", "n2", "n", "ratio", "mean1", "cv", "cv1", "cv2", "dispersion1",
-          "dispersion2", "dispersion", "cor", "alpha", "alternative", "mean_null",
-          "ratio_null", "test")
+        c(
+          "n1",
+          "n2",
+          "n",
+          "ratio",
+          "mean1",
+          "cv",
+          "cv1",
+          "cv2",
+          "dispersion1",
+          "dispersion2",
+          "dispersion",
+          "cor",
+          "alpha",
+          "alternative",
+          "mean_null",
+          "ratio_null",
+          "test"
+        )
       )
     ) |>
     select(
-      -any_of({{exclude}})
+      -any_of(exclude)
     )
 
   # Don't want these variables to be numeric, so factorize them
   vars_to_factorize <- c(color)
   vars_to_factorize <- vars_to_factorize[!is.na(vars_to_factorize)]
-  if(length(vars_to_factorize) == 0L) {vars_to_factorize <- NULL}
+  if (length(vars_to_factorize) == 0L) {
+    vars_to_factorize <- NULL
+  }
 
   # Create data frame for plotting
   df_plot <- condition_at |>
     left_join(data, by = names(condition_at)) |>
-    mutate(across(.cols = any_of({{vars_to_factorize}}), .fns = as.factor))
+    mutate(across(.cols = any_of(vars_to_factorize), .fns = as.factor))
 
   # now add nsims back to condition_at
-  if("nsims" %in% names(data)) {
+  if ("nsims" %in% names(data)) {
     df_nsims <- data |>
-      select(nsims) |>
-      filter(!duplicated(nsims))
-    if(nrow(df_nsims) > 1L) {
+      select(.data$nsims) |>
+      filter(!duplicated(.data$nsims))
+    if (nrow(df_nsims) > 1L) {
       df_nsims <- df_nsims |>
-        summarize(nsims = paste0("Varying: ", "min=", min(nsims), ",max=", max(nsims)))
+        summarize(
+          nsims = paste0(
+            "Varying: ",
+            "min=",
+            min(.data$nsims),
+            ",max=",
+            max(.data$nsims)
+          )
+        )
       attr(df_nsims[["nsims"]], "label") <- "N Simulations"
     }
     condition_at <- bind_cols(condition_at, df_nsims)
@@ -811,67 +954,73 @@ data_builder <- function(
   # Replace names with labels and convert to list
   names(condition_at) <- vapply(
     X = condition_at,
-    FUN = function(x) {attr(x, "label", exact = TRUE)},
+    FUN = function(x) {
+      attr(x, "label", exact = TRUE)
+    },
     FUN.VALUE = character(1L),
     USE.NAMES = FALSE
   )
   condition_at <- as.list(condition_at)
 
   # Return
-  list(df_plot = df_plot, axis_labels = axis_labels, condition_at = condition_at)
+  list(
+    df_plot = df_plot,
+    axis_labels = axis_labels,
+    condition_at = condition_at
+  )
 }
 
 #-------------------------------------------------------------------------------
 # Build geoms using a list
 #-------------------------------------------------------------------------------
 geom_builder <- function(
-    condition_at,
-    x_axis,
-    y_axis,
-    color,
-    facet_row,
-    facet_col,
-    hline,
-    caption,
-    caption_width,
-    axis_labels
+  condition_at,
+  x_axis,
+  y_axis,
+  color,
+  facet_row,
+  facet_col,
+  hline,
+  caption,
+  caption_width,
+  axis_labels
 ) {
   list(
-    if(is.na(color)) {
+    if (is.na(color)) {
       geom_point()
     } else {
       geom_point(aes(color = .data[[color]], group = .data[[color]]))
     },
-    if(is.na(color)) {
+    if (is.na(color)) {
       geom_line()
     } else {
       geom_line(aes(color = .data[[color]], group = .data[[color]]))
     },
-    if(x_axis %in% c("n1", "n2", "n")) {
-      scale_x_continuous(breaks = ~round(unique(pretty(.)))) # integer breaks
+    if (x_axis %in% c("n1", "n2", "n")) {
+      scale_x_continuous(breaks = ~ round(unique(pretty(.)))) # integer breaks
     },
-    if(x_axis %in% c("power")) {
+    if (x_axis %in% c("power")) {
       scale_x_continuous(limits = c(0, 1), labels = percent)
     },
-    if(y_axis %in% c("n1", "n2", "n")) {
-      scale_y_continuous(breaks = ~round(unique(pretty(.)))) # integer breaks
+    if (y_axis %in% c("n1", "n2", "n")) {
+      scale_y_continuous(breaks = ~ round(unique(pretty(.)))) # integer breaks
     },
-    if(y_axis %in% c("power")) {
+    if (y_axis %in% c("power")) {
       scale_y_continuous(limits = c(0, 1), labels = percent)
     },
-    if(!is.na(facet_row) && is.na(facet_col)) {
+    if (!is.na(facet_row) && is.na(facet_col)) {
       facet_grid(
         rows = vars(.data[[facet_row]]),
         labeller = labeller(.rows = label_both2)
       )
     },
-    if(is.na(facet_row) && !is.na(facet_col)) {
+    if (is.na(facet_row) && !is.na(facet_col)) {
       facet_grid(
         cols = vars(.data[[facet_col]]),
         labeller = labeller(.cols = label_both2)
       )
     },
-    if(!is.na(facet_row) && !is.na(facet_col)) {
+    if (!is.na(facet_row) && !is.na(facet_col)) {
       facet_grid(
         rows = vars(.data[[facet_row]]),
         cols = vars(.data[[facet_col]]),
@@ -881,17 +1030,21 @@ geom_builder <- function(
     scale_color_discrete(labels = round2),
     labs(x = axis_labels[match(x_axis, names(axis_labels))]),
     labs(y = axis_labels[match(y_axis, names(axis_labels))]),
-    if(!is.na(color)) {
+    if (!is.na(color)) {
       labs(color = axis_labels[match(color, names(axis_labels))])
     },
-    if(!is.null(hline)) {geom_hline(yintercept = hline, alpha = 0.5)},
-    if(caption) {labs(caption = caption_builder(condition_at, caption_width))}
+    if (!is.null(hline)) {
+      geom_hline(yintercept = hline, alpha = 0.5)
+    },
+    if (caption) {
+      labs(caption = caption_builder(condition_at, caption_width))
+    }
   )
 }
 
 # Build caption for plot
 caption_builder <- function(condition_at, caption_width) {
-  if(length(condition_at) == 0L) {
+  if (length(condition_at) == 0L) {
     return(NULL)
   }
   paste0(
@@ -913,10 +1066,10 @@ label_both2 <- function(labels, sep = ": ") {
   variable <- lapply(
     as.list(names(labels)),
     rep,
-    if(is.null(nrow(labels))) length(labels[[1]]) else nrow(labels)
+    if (is.null(nrow(labels))) length(labels[[1]]) else nrow(labels)
   )
   out <- vector("list", length(value))
-  for(i in seq_along(out)) {
+  for (i in seq_along(out)) {
     out[[i]] <- paste(variable[[i]], value[[i]], sep = sep)
   }
   out
@@ -924,12 +1077,12 @@ label_both2 <- function(labels, sep = ": ") {
 attr(label_both2, "class") <- c("function", "labeller")
 
 remove_used_axis <- function(x) {
- if(length(x) > 1L) {
-   x <- x[-1L]
- } else {
-   x <- NA
- }
+  if (length(x) > 1L) {
+    x <- x[-1L]
+  } else {
+    x <- NA
+  }
   x
 }
 
-utils::globalVariables(c(".data", "nsims"))
+utils::globalVariables(".data")

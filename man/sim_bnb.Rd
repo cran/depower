@@ -12,8 +12,7 @@ sim_bnb(
   dispersion,
   nsims = 1L,
   return_type = "list",
-  max_zeros = 0.99,
-  ncores = 1L
+  max_zeros = 0.99
 )
 }
 \arguments{
@@ -55,12 +54,6 @@ allowed to have. If the proportion of zeros is greater than this
 value, the corresponding data is excluded from the set of simulations.
 This is most likely to occur when the sample size is small and the
 dispersion parameter is small.}
-
-\item{ncores}{(Scalar integer: \code{1L}; \verb{[1,Inf)})\cr
-The number of cores (number of worker processes) to use. Do not set
-greater than the value returned by \code{\link[parallel:detectCores]{parallel::detectCores()}}. May be
-helpful when the number of parameter combinations is large and \code{nsims}
-is large.}
 }
 \value{
 If \code{nsims = 1} and the number of unique parameter combinations is
@@ -165,12 +158,12 @@ lines(x = sort(z), y = (1:n)/n, col = 'black')
 }\if{html}{\out{</div>}}
 
 \if{html}{\out{<div style="display: flex; justify-content: center; padding-top: 10px; padding-bottom: 10px;">
-  <img style="max-width: 100\%; height: auto;" src="figures/gamma_poisson_mixture-1.svg" alt="Gamma-Poisson Mixture CDF" />
+  <img style="max-width: 400px; width: 100\%; height: auto;" src="figures/gamma_poisson_mixture-1.png" alt="Gamma-Poisson Mixture CDF" />
 </div>
 <br>}}
 \if{latex}{
   \out{\begin{center}}
-  \figure{gamma_poisson_mixture-1.pdf}{options: width=3in}
+  \figure{gamma_poisson_mixture-1.png}{options: width=3in}
   \out{\end{center}}
 }
 
@@ -312,6 +305,5 @@ ggplot2::ggplot(
 \insertRef{aban_2009}{depower}
 }
 \seealso{
-\code{\link[=sim_nb]{sim_nb()}}, \code{\link[stats:Poisson]{stats::rpois()}}, \code{\link[stats:GammaDist]{stats::rgamma()}},
-\code{\link[stats:NegBinomial]{stats::rnbinom()}}
+\code{\link[=sim_nb]{sim_nb()}}
 }

@@ -4,7 +4,14 @@
 \alias{wald_test_bnb}
 \title{Wald test for BNB ratio of means}
 \usage{
-wald_test_bnb(data, ci_level = NULL, link = "log", ratio_null = 1, ...)
+wald_test_bnb(
+  data,
+  ci_level = NULL,
+  link = "log",
+  ratio_null = 1,
+  distribution = asymptotic(),
+  ...
+)
 }
 \arguments{
 \item{data}{(list)\cr
@@ -22,12 +29,19 @@ confidence intervals are calculated at the specified level.}
 \item{link}{(Scalar string: \code{"log"})\cr
 The one-to-one link function for transformation of the ratio in the
 test hypotheses. Must be one of \code{"log"} (default), \code{"sqrt"},
-\code{"squared"}, or "\verb{identity"}. See 'Details' for additional information.}
+\code{"squared"}, or \code{"identity"}. See 'Details' for additional information.}
 
 \item{ratio_null}{(Scalar numeric: \code{1}; \verb{(0, Inf)})\cr
 The (pre-transformation) ratio of means assumed under the null
 hypothesis (sample 2 / sample 1). Typically \code{ratio_null = 1}
 (no difference). See 'Details' for additional information.}
+
+\item{distribution}{(function: \code{\link[=asymptotic]{asymptotic()}} or
+\code{\link[=simulated]{simulated()}})\cr
+The method used to define the distribution of the \eqn{\chi^2} Wald
+test statistic under the null hypothesis. See 'Details' and
+\code{\link[=asymptotic]{asymptotic()}} or \code{\link[=simulated]{simulated()}} for additional
+information.}
 
 \item{...}{Optional arguments passed to the MLE function \code{\link[=mle_bnb]{mle_bnb()}}.}
 }
@@ -112,12 +126,14 @@ where
 
 Under \eqn{H_{null}}, the Wald test statistic is asymptotically distributed
 as \eqn{\chi^2_1}. The approximate level \eqn{\alpha} test rejects
-\eqn{H_{null}} if \eqn{W(f(\hat{r})) \geq \chi^2_1(1 - \alpha)}. Note that
+\eqn{H_{null}} if \eqn{W(f(\hat{r})) \geq \chi^2_1(1 - \alpha)}. However,
 the asymptotic critical value is known to underestimate the exact critical
-value. Hence, the nominal significance level may not be achieved for small
-sample sizes (possibly \eqn{n \leq 10} or \eqn{n \leq 50}). The level of
-significance inflation also depends on \eqn{f(\cdot)} and is most severe for
-\eqn{f(r) = r^2}, where only the exact critical value is recommended.
+value and the nominal significance level may not be achieved for small sample
+sizes. The level of significance inflation also depends on \eqn{f(\cdot)} and
+is most severe for \eqn{f(r) = r^2} where only the exact critical value
+should be used. Argument \code{distribution} allows control of the distribution of
+the \eqn{\chi^2_1} test statistic under the null hypothesis by use of
+functions \code{\link[=asymptotic]{asymptotic()}} and \code{\link[=simulated]{simulated()}}.
 }
 \examples{
 #----------------------------------------------------------------------------
@@ -139,4 +155,7 @@ sim_bnb(
 \insertRef{rettiganti_2012}{depower}
 
 \insertRef{aban_2009}{depower}
+}
+\seealso{
+\code{\link[=lrt_bnb]{lrt_bnb()}}
 }

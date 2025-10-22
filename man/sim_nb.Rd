@@ -14,8 +14,7 @@ sim_nb(
   dispersion2 = dispersion1,
   nsims = 1L,
   return_type = "list",
-  max_zeros = 0.99,
-  ncores = 1L
+  max_zeros = 0.99
 )
 }
 \arguments{
@@ -63,12 +62,6 @@ allowed to have. If the proportion of zeros is greater than this
 value, the corresponding data is excluded from the set of simulations.
 This is most likely to occur when the sample size is small and the
 dispersion parameter is small.}
-
-\item{ncores}{(Scalar integer: \code{1L}; \verb{[1,Inf)})\cr
-The number of cores (number of worker processes) to use. Do not set
-greater than the value returned by \code{\link[parallel:detectCores]{parallel::detectCores()}}. May be
-helpful when the number of parameter combinations is large and \code{nsims}
-is large.}
 }
 \value{
 If \code{nsims = 1} and the number of unique parameter combinations is
@@ -77,8 +70,8 @@ one, the following objects are returned:
 \item If \code{return_type = "list"}, a list:
 \tabular{lll}{
 Slot \tab Name \tab Description \cr
-1 \tab \tab Simulated counts from group 1. \cr
-2 \tab \tab Simulated counts from group 2.
+1 \tab \code{value1} \tab Simulated counts from group 1. \cr
+2 \tab \code{value2} \tab Simulated counts from group 2.
 }
 \item If \code{return_type = "data.frame"}, a data frame:
 \tabular{lll}{
@@ -273,5 +266,5 @@ ggplot2::ggplot(
 \insertRef{cameron_2013}{depower}
 }
 \seealso{
-\code{\link[=sim_bnb]{sim_bnb()}}, \code{\link[stats:NegBinomial]{stats::rnbinom()}}
+\code{\link[=sim_bnb]{sim_bnb()}}
 }

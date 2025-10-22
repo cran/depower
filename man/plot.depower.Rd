@@ -84,11 +84,11 @@ sim_log_lognormal(
 }\if{html}{\out{</div>}}
 
 \if{html}{\out{<div style="display: flex; justify-content: center; padding-top: 10px; padding-bottom: 10px;">
-  <img style="max-width: 100\%; height: auto;" src="figures/plot_details-1.svg" alt="Example of extending plot() with ggplot2 functions" />
+  <img style="max-width: 500px; width: 100\%; height: auto;" src="figures/plot_details-1.png" alt="Example of extending plot() with ggplot2 functions" />
 </div>}}
 \if{latex}{
   \out{\begin{center}}
-  \figure{plot_details-1.pdf}{options: width=4in}
+  \figure{plot_details-1.png}{options: width=4in}
   \out{\end{center}}
 }
 }

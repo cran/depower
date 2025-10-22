@@ -23,7 +23,9 @@ fit assuming different dispersions.}
 The statistical method used for the test results. \code{test = "wald"}
 performs a Wald test and optionally the Wald confidence intervals.
 \code{test = "lrt"} performs a likelihood ratio test and optionally
-the profile likelihood confidence intervals.}
+the profile likelihood confidence intervals. Wald confidence intervals
+are always returned for the limits of the mean of sample 2 and, when
+\code{equal_dispersion=FALSE}, for the limits of the dispersion of sample 2.}
 
 \item{ci_level}{(Scalar numeric: \code{NULL}; \verb{(0, 1)})\cr
 If \code{NULL}, confidence intervals are set as \code{NA}. If in \verb{(0, 1)},
@@ -53,8 +55,8 @@ Slot \tab Subslot \tab Name \tab Description \cr
 
 6 \tab   \tab \code{mean2}    \tab Estimated mean of group 2. \cr
 6 \tab 1 \tab \code{estimate} \tab Point estimate. \cr
-6 \tab 2 \tab \code{lower}    \tab Confidence interval lower bound. \cr
-6 \tab 3 \tab \code{upper}    \tab Confidence interval upper bound. \cr
+6 \tab 2 \tab \code{lower}    \tab Wald confidence interval lower bound. \cr
+6 \tab 3 \tab \code{upper}    \tab Wald confidence interval upper bound. \cr
 
 7 \tab   \tab \code{dispersion1} \tab Estimated dispersion of group 1. \cr
 7 \tab 1 \tab \code{estimate}    \tab Point estimate. \cr
@@ -63,8 +65,8 @@ Slot \tab Subslot \tab Name \tab Description \cr
 
 8 \tab   \tab \code{dispersion2} \tab Estimated dispersion of group 2. \cr
 8 \tab 1 \tab \code{estimate}    \tab Point estimate. \cr
-8 \tab 2 \tab \code{lower}       \tab Confidence interval lower bound. \cr
-8 \tab 3 \tab \code{upper}       \tab Confidence interval upper bound. \cr
+8 \tab 2 \tab \code{lower}       \tab Wald confidence interval lower bound. \cr
+8 \tab 3 \tab \code{upper}       \tab Wald confidence interval upper bound. \cr
 
 9 \tab \tab \code{n1} \tab Sample size of group 1. \cr
 10 \tab \tab \code{n2} \tab Sample size of group 2. \cr
@@ -152,13 +154,13 @@ mod_alt <- glmmTMB::glmmTMB(
   formula = value ~ condition,
   data = d,
   dispformula = ~ condition,
-  family = glmmTMB::nbinom2,
+  family = glmmTMB::nbinom2
 )
 mod_null <- glmmTMB::glmmTMB(
   formula = value ~ 1,
   data = d,
   dispformula = ~ condition,
-  family = glmmTMB::nbinom2,
+  family = glmmTMB::nbinom2
 )
 
 lrt_chisq <- as.numeric(-2 * (logLik(mod_null) - logLik(mod_alt)))
@@ -175,5 +177,5 @@ anova(mod_null, mod_alt)
 \insertRef{hilbe_2014}{depower}
 }
 \seealso{
-\code{\link[glmmTMB:glmmTMB]{glmmTMB::glmmTMB()}}
+\code{\link[=wald_test_nb]{wald_test_nb()}}, \code{\link[=lrt_nb]{lrt_nb()}}
 }

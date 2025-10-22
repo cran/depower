@@ -147,5 +147,5 @@ sim_log_lognormal(
 \insertRef{johnson_1994}{depower}
 }
 \seealso{
-\code{\link[stats:t.test]{stats::t.test()}}
+\code{\link[=t_test_paired]{t_test_paired()}}
 }

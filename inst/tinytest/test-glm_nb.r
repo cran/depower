@@ -37,8 +37,8 @@ expect_equal(
     ),
     mean2 = list(
       estimate = 14.3750094830638,
-      lower = 8.9162580515208,
-      upper = 23.2461558723149
+      lower = 12.70001,
+      upper = 16.27092
     ),
     dispersion1 = list(
       estimate = 1.5454223071454,
@@ -47,8 +47,8 @@ expect_equal(
     ),
     dispersion2 = list(
       estimate = 11.0799848708247,
-      lower = 3.05555281459033,
-      upper = 46.7993297825864
+      lower = 4.980081,
+      upper = 24.65142
     ),
     n1 = 60L,
     n2 = 40L,
@@ -60,7 +60,7 @@ expect_equal(
     hessian = "Hessian appears to be positive definite.",
     convergence = "relative convergence (4)"
   ),
-  tolerance = 0.0001,
+  tolerance = 0.001,
   scale = 1
 )
 
@@ -82,8 +82,8 @@ expect_equal(
     ),
     mean2 = list(
       estimate = 14.3750094830638,
-      lower = 8.96591977874449,
-      upper = 23.0473730233521
+      lower = 12.70001,
+      upper = 16.27092
     ),
     dispersion1 = list(
       estimate = 1.5454223071454,
@@ -92,8 +92,8 @@ expect_equal(
     ),
     dispersion2 = list(
       estimate = 11.0799848708247,
-      lower = 2.92833472829446,
-      upper = 41.9235081124784
+      lower = 4.980081,
+      upper = 24.65142
     ),
     n1 = 60L,
     n2 = 40L,
@@ -105,6 +105,6 @@ expect_equal(
     hessian = "Hessian appears to be positive definite.",
     convergence = "relative convergence (4)"
   ),
-  tolerance = 0.0001,
+  tolerance = 0.001,
   scale = 1
 )

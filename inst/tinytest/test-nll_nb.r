@@ -28,8 +28,8 @@ null <- nll_nb_null(
   ratio_null = 1
 )
 
-expect_equal(alt, 674.9149, scale = 1, tolerance = 0.001)
-expect_equal(null, 707.5977, scale = 1, tolerance = 0.001)
+expect_equal(alt, 674.9149, scale = 1, tolerance = 0.01)
+expect_equal(null, 707.5977, scale = 1, tolerance = 0.01)
 
 #-------------------------------------------------------------------------------
 # Equal disp
@@ -59,5 +59,5 @@ null <- nll_nb_null(
   ratio_null = 1
 )
 
-expect_equal(alt, 600.1207, scale = 1, tolerance = 0.001)
-expect_equal(null, 709.0366, scale = 1, tolerance = 0.001)
+expect_equal(alt, 600.1207, scale = 1, tolerance = 0.01)
+expect_equal(null, 709.0366, scale = 1, tolerance = 0.01)

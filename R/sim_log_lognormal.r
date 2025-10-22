@@ -125,11 +125,6 @@
 #'        list object is returned. If `"data.frame"` a data frame in tall format
 #'        is returned. The list object provides computational efficiency and the
 #'        data frame object is convenient for formulas. See 'Value'.
-#' @param ncores (Scalar integer: `1L`; `[1,Inf)`)\cr
-#'        The number of cores (number of worker processes) to use. Do not set
-#'        greater than the value returned by [parallel::detectCores()]. May be
-#'        helpful when the number of parameter combinations is large and `nsims`
-#'        is large.
 #' @param messages (Scalar logical: `TRUE`)\cr
 #'        Whether or not to display messages for pathological simulation cases.
 #'
@@ -187,8 +182,6 @@
 #'   8 \tab `distribution` \tab Distribution sampled from. \cr
 #'   9 \tab `data` \tab List-column of simulated data.
 #' }
-#'
-#' @seealso [stats::rnorm()], [mvnfast::rmvn()]
 #'
 #' @examples
 #' #----------------------------------------------------------------------------
@@ -303,61 +296,54 @@
 #'
 #' @export
 sim_log_lognormal <- function(
-    n1,
-    n2 = NULL,
-    ratio,
-    cv1,
-    cv2 = NULL,
-    cor = 0,
-    nsims = 1L,
-    return_type = "list",
-    ncores = 1L,
-    messages = TRUE
+  n1,
+  n2 = NULL,
+  ratio,
+  cv1,
+  cv2 = NULL,
+  cor = 0,
+  nsims = 1L,
+  return_type = "list",
+  messages = TRUE
 ) {
   #-----------------------------------------------------------------------------
   # Check arguments
   #-----------------------------------------------------------------------------
-  if(!is.numeric(n1) || any(n1 < 2L)) {
+  if (!is.numeric(n1) || any(n1 < 2L)) {
     stop("Argument 'n1' must be an integer vector from [2, Inf).")
   }
-  if(!is.null(n2) && (!is.numeric(n2) || any(n2 < 2L))) {
+  if (!is.null(n2) && (!is.numeric(n2) || any(n2 < 2L))) {
     stop("Argument 'n2' must be an integer vector from [2, Inf).")
   }
-  if(!is.numeric(ratio) || any(ratio <= 0)) {
+  if (!is.numeric(ratio) || any(ratio <= 0)) {
     stop("Argument 'ratio' must be a positive numeric vector.")
   }
-  if(!is.numeric(cv1) || any(cv1 <= 0)) {
+  if (!is.numeric(cv1) || any(cv1 <= 0)) {
     stop("Argument 'cv1' must be a positive numeric vector.")
   }
-  if(!is.null(cv2) && (!is.numeric(cv2) || any(cv2 <= 0))) {
+  if (!is.null(cv2) && (!is.numeric(cv2) || any(cv2 <= 0))) {
     stop("Argument 'cv2' must be a positive numeric vector.")
   }
-  if(!is.numeric(cor) || any(cor < -1) || any(cor > 1)) {
+  if (!is.numeric(cor) || any(cor < -1) || any(cor > 1)) {
     stop("Argument 'cor' must be a numeric vector from [-1, 1].")
   }
-  if(length(return_type) != 1L) {
+  if (length(return_type) != 1L) {
     stop("Argument 'return_type' must be one of 'list' or 'data.frame'.")
   }
-  if(!is.numeric(nsims) || length(nsims) != 1L || nsims < 1L) {
+  if (!is.numeric(nsims) || length(nsims) != 1L || nsims < 1L) {
     stop("Argument 'nsims' must be a scalar integer from [1, Inf).")
   }
-  data.frame <- switch(return_type,
+  data.frame <- switch(
+    return_type,
     "list" = FALSE,
     "data.frame" = TRUE,
     stop("Argument 'return_type' must be one of 'list' or 'data.frame'.")
   )
-  if(!is.numeric(ncores) || length(ncores) != 1L || ncores < 1L) {
-    stop("Argument 'ncores' must be a positive scalar integer.")
-  }
-  if(ncores > 1L) {
-    if(isTRUE(ncores > parallel::detectCores())) {
-      max <- parallel::detectCores()
-      warning("Argument 'ncores' should not be greater than ", max)
-    }
-  }
 
-  if((is.null(n2) && !is.null(cv2)) || (!is.null(n2) && is.null(cv2))) {
-    stop("Arguments 'n2' and 'cv2' must both be NULL (one sample) or both numeric (two samples).")
+  if ((is.null(n2) && !is.null(cv2)) || (!is.null(n2) && is.null(cv2))) {
+    stop(
+      "Arguments 'n2' and 'cv2' must both be NULL (one sample) or both numeric (two samples)."
+    )
   }
 
   needs_grid <- any(c(nsims, lengths(list(n1, n2, ratio, cv1, cv2, cor))) > 1L)
@@ -365,15 +351,15 @@ sim_log_lognormal <- function(
   #-----------------------------------------------------------------------------
   # Simulate data
   #-----------------------------------------------------------------------------
-  res <- if(is.null(n2)) { # n2 = NULL implies one sample case
-    if(needs_grid) {
+  res <- if (is.null(n2)) {
+    # n2 = NULL implies one sample case
+    if (needs_grid) {
       grid_log_lognormal_one_sample(
         n1 = n1,
         ratio = ratio,
         cv1 = cv1,
         nsims = nsims,
-        data.frame = data.frame,
-        ncores = ncores
+        data.frame = data.frame
       )
     } else {
       sim_log_lognormal_one_sample(
@@ -384,8 +370,9 @@ sim_log_lognormal <- function(
         data.frame = data.frame
       )
     }
-  } else { # two sample case
-    if(needs_grid) {
+  } else {
+    # two sample case
+    if (needs_grid) {
       grid_log_lognormal_two_sample(
         n1 = n1,
         n2 = n2,
@@ -395,7 +382,6 @@ sim_log_lognormal <- function(
         cor = cor,
         nsims = nsims,
         data.frame = data.frame,
-        ncores = ncores,
         messages = messages
       )
     } else {
@@ -423,8 +409,7 @@ grid_log_lognormal_one_sample <- function(
   ratio,
   cv1,
   nsims,
-  data.frame,
-  ncores
+  data.frame
 ) {
   #-----------------------------------------------------------------------------
   # Unique combinations for simulating data.
@@ -441,15 +426,8 @@ grid_log_lognormal_one_sample <- function(
   #-----------------------------------------------------------------------------
   # Simulate data
   #-----------------------------------------------------------------------------
-  if(ncores > 1L) {
-    cluster <- multidplyr::new_cluster(ncores)
-    multidplyr::cluster_library(cluster, 'depower')
-  }
-
-  # Simulate data
   res <- grid_sim |>
     dplyr::rowwise() |>
-    {\(.) if(ncores > 1L) {multidplyr::partition(data = ., cluster = cluster)} else {.}}() |>
     dplyr::mutate(
       data = list(
         sim_log_lognormal_one_sample(
@@ -461,7 +439,6 @@ grid_log_lognormal_one_sample <- function(
         )
       )
     ) |>
-    {\(.) if(ncores > 1L) {dplyr::collect(x = .)} else {.}}() |>
     dplyr::ungroup()
 
   #-----------------------------------------------------------------------------
@@ -477,8 +454,10 @@ grid_log_lognormal_one_sample <- function(
     "Data" = "data"
   )
   idx <- match(names(res), vars)
-  if(anyNA(idx)) {stop("Unknown variable found while labeling data frame.")}
-  for(i in seq_len(ncol(res))) {
+  if (anyNA(idx)) {
+    stop("Unknown variable found while labeling data frame.")
+  }
+  for (i in seq_len(ncol(res))) {
     attr(res[[i]], "label") <- names(vars)[idx][i]
   }
 
@@ -492,16 +471,15 @@ grid_log_lognormal_one_sample <- function(
 }
 
 grid_log_lognormal_two_sample <- function(
-    n1,
-    n2,
-    ratio,
-    cv1,
-    cv2,
-    cor,
-    nsims,
-    data.frame,
-    ncores,
-    messages
+  n1,
+  n2,
+  ratio,
+  cv1,
+  cv2,
+  cor,
+  nsims,
+  data.frame,
+  messages
 ) {
   #-----------------------------------------------------------------------------
   # Unique combinations for simulating data
@@ -518,10 +496,12 @@ grid_log_lognormal_two_sample <- function(
   )
 
   # Handle case of differing sample sizes for correlated data.
-  bad_rows <- which(grid_sim[["cor"]] != 0 & (grid_sim[["n1"]] != grid_sim[["n2"]]))
-  if(length(bad_rows) > 0L) {
+  bad_rows <- which(
+    grid_sim[["cor"]] != 0 & (grid_sim[["n1"]] != grid_sim[["n2"]])
+  )
+  if (length(bad_rows) > 0L) {
     # Message isn't necessary if you only have correlated data
-    if(any(grid_sim[["cor"]] == 0) && any(grid_sim[["cor"]] != 0)) {
+    if (any(grid_sim[["cor"]] == 0) && any(grid_sim[["cor"]] != 0)) {
       message <- paste0(
         "Message from depower::sim_log_lognormal():\n",
         "Arguments 'n1' and 'n2' must be the same for correlated data.\n",
@@ -530,7 +510,7 @@ grid_log_lognormal_two_sample <- function(
         nrow(grid_sim) - length(bad_rows),
         " rows (valid parameter combinations) remain."
       )
-      if(messages) {
+      if (messages) {
         message(message)
       }
     }
@@ -548,15 +528,8 @@ grid_log_lognormal_two_sample <- function(
   #-----------------------------------------------------------------------------
   # Simulate data
   #-----------------------------------------------------------------------------
-  if(ncores > 1L) {
-    cluster <- multidplyr::new_cluster(ncores)
-    multidplyr::cluster_library(cluster, 'depower')
-  }
-
-  # Simulate data
   res <- grid_sim |>
     dplyr::rowwise() |>
-    {\(.) if(ncores > 1L) {multidplyr::partition(data = ., cluster = cluster)} else {.}}() |>
     dplyr::mutate(
       data = list(
         sim_log_lognormal_two_sample(
@@ -571,7 +544,6 @@ grid_log_lognormal_two_sample <- function(
         )
       )
     ) |>
-    {\(.) if(ncores > 1L) {dplyr::collect(x = .)} else {.}}() |>
     dplyr::ungroup()
 
   #-----------------------------------------------------------------------------
@@ -590,15 +562,17 @@ grid_log_lognormal_two_sample <- function(
     "Data" = "data"
   )
   idx <- match(names(res), vars)
-  if(anyNA(idx)) {stop("Unknown variable found while labeling data frame.")}
-  for(i in seq_len(ncol(res))) {
+  if (anyNA(idx)) {
+    stop("Unknown variable found while labeling data frame.")
+  }
+  for (i in seq_len(ncol(res))) {
     attr(res[[i]], "label") <- names(vars)[idx][i]
   }
 
   # Class
-  cls <- if(all(res$cor == 0L)) {
+  cls <- if (all(res$cor == 0L)) {
     "log_lognormal_independent_two_sample"
-  } else if(all(res$cor != 0)) {
+  } else if (all(res$cor != 0)) {
     "log_lognormal_dependent_two_sample"
   } else {
     "log_lognormal_mixed_two_sample"
@@ -612,11 +586,11 @@ grid_log_lognormal_two_sample <- function(
 }
 
 sim_log_lognormal_one_sample <- function(
-    n1,
-    ratio,
-    cv1,
-    nsims = 1L,
-    data.frame = FALSE
+  n1,
+  ratio,
+  cv1,
+  nsims = 1L,
+  data.frame = FALSE
 ) {
   #-----------------------------------------------------------------------------
   # Simulate
@@ -624,17 +598,19 @@ sim_log_lognormal_one_sample <- function(
   log_ratio <- log(ratio)
   log_sigma <- sqrt(log(cv1^2 + 1))
 
-  if(nsims > 1L) {
+  if (nsims > 1L) {
     res <- lapply(
       seq_len(nsims),
-      function(x) {list(value1 = rnorm(n = n1, mean = log_ratio, sd = log_sigma))}
+      function(x) {
+        list(value1 = rnorm(n = n1, mean = log_ratio, sd = log_sigma))
+      }
     )
-    if(data.frame) {
+    if (data.frame) {
       res <- lapply(res, list_to_df)
     }
   } else {
     res <- list(value1 = rnorm(n = n1, mean = log_ratio, sd = log_sigma))
-    if(data.frame) {
+    if (data.frame) {
       res <- list_to_df(res)
     }
   }
@@ -646,14 +622,14 @@ sim_log_lognormal_one_sample <- function(
 }
 
 sim_log_lognormal_two_sample <- function(
-    n1,
-    n2 = NULL,
-    ratio,
-    cv1,
-    cv2 = NULL,
-    cor = 0,
-    nsims = 1L,
-    data.frame = FALSE
+  n1,
+  n2 = NULL,
+  ratio,
+  cv1,
+  cv2 = NULL,
+  cor = 0,
+  nsims = 1L,
+  data.frame = FALSE
 ) {
   #-----------------------------------------------------------------------------
   # Simulate
@@ -662,18 +638,33 @@ sim_log_lognormal_two_sample <- function(
 
   is_paired <- cor != 0L
   is_unequal_ss <- n1 != n2
-  if(is_unequal_ss & is_paired) {
+  if (is_unequal_ss & is_paired) {
     stop("Arguments 'n1' and 'n2' must be the same for dependent data.")
   }
   maxn <- max(n1, n2)
   is_n1_smaller <- n1 < n2
 
+  # cor * cv1 * cv2 + 1 must be > 0
+  lower_cor <- -1 / (cv1 * cv2)
+  if (cor < lower_cor) {
+    stop(sprintf(
+      "Infeasible 'cor' for given CVs: require cor >= %.4f but got %.4f.",
+      lower_cor,
+      cor
+    ))
+  }
+
   log_sigma1 <- sqrt(log(cv1^2 + 1))
   log_sigma2 <- sqrt(log(cv2^2 + 1))
-  log_cor <- log(cor*cv1*cv2 + 1) / (log_sigma1 * log_sigma2)
+  log_cor <- log(cor * cv1 * cv2 + 1) / (log_sigma1 * log_sigma2)
   log_cormat <- matrix(c(1, log_cor, log_cor, 1), nrow = 2L, ncol = 2L)
   log_varmat <- matrix(
-    c(log_sigma1^2, log_sigma1*log_sigma2, log_sigma1*log_sigma2, log_sigma2^2),
+    c(
+      log_sigma1^2,
+      log_sigma1 * log_sigma2,
+      log_sigma1 * log_sigma2,
+      log_sigma2^2
+    ),
     nrow = 2L,
     ncol = 2L
   )
@@ -682,24 +673,27 @@ sim_log_lognormal_two_sample <- function(
   # use pre-allocated matrix for mvnfast::rmvn()
   A <- matrix(data = NA_real_, nrow = maxn, ncol = 2L)
 
-  if(nsims > 1) {
+  if (nsims > 1) {
     res <- lapply(
       seq_len(nsims),
-      function(x) {rnorm_two_sample(
-        maxn = maxn,
-        log_ratio = log_ratio,
-        log_covmat = log_covmat,
-        is_unequal_ss = is_unequal_ss,
-        is_n1_smaller = is_n1_smaller,
-        n1 = n1,
-        n2 = n2,
-        A = A
-      )}
+      function(x) {
+        rnorm_two_sample(
+          maxn = maxn,
+          log_ratio = log_ratio,
+          log_covmat = log_covmat,
+          is_unequal_ss = is_unequal_ss,
+          is_n1_smaller = is_n1_smaller,
+          n1 = n1,
+          n2 = n2,
+          A = A
+        )
+      }
     )
-    if(data.frame) {
+    if (data.frame) {
       res <- lapply(res, list_to_df)
     }
-  } else { # nsims == 1
+  } else {
+    # nsims == 1
     res <- rnorm_two_sample(
       maxn = maxn,
       log_ratio = log_ratio,
@@ -710,7 +704,7 @@ sim_log_lognormal_two_sample <- function(
       n2 = n2,
       A = A
     )
-    if(data.frame) {
+    if (data.frame) {
       res <- list_to_df(res)
     }
   }
@@ -722,14 +716,14 @@ sim_log_lognormal_two_sample <- function(
 }
 
 rnorm_two_sample <- function(
-    maxn,
-    log_ratio,
-    log_covmat,
-    is_unequal_ss,
-    is_n1_smaller,
-    n1,
-    n2,
-    A
+  maxn,
+  log_ratio,
+  log_covmat,
+  is_unequal_ss,
+  is_n1_smaller,
+  n1,
+  n2,
+  A
 ) {
   rmvn(
     n = maxn,
@@ -738,16 +732,18 @@ rnorm_two_sample <- function(
     A = A
   )
 
-  if(is_unequal_ss) { # two sample data with unequal sample sizes
-    if(is_n1_smaller) {
+  if (is_unequal_ss) {
+    # two sample data with unequal sample sizes
+    if (is_n1_smaller) {
       # Return
-      list(value1 = A[,1L][seq_len(n1)], value2 = A[,2L])
+      list(value1 = A[, 1L][seq_len(n1)], value2 = A[, 2L])
     } else {
       # Return
-      list(value1 = A[,1L], value2 = A[,2L][seq_len(n2)])
+      list(value1 = A[, 1L], value2 = A[, 2L][seq_len(n2)])
     }
-  } else { # two sample data with equal sample size
+  } else {
+    # two sample data with equal sample size
     # Return
-    list(value1 = A[,1L], value2 = A[,2L])
+    list(value1 = A[, 1L], value2 = A[, 2L])
   }
 }

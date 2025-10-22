@@ -44,10 +44,12 @@
 #'
 #' Under \eqn{H_{null}}, the LRT test statistic is asymptotically distributed
 #' as \eqn{\chi^2_1}. The approximate level \eqn{\alpha} test rejects
-#' \eqn{H_{null}} if \eqn{\lambda \geq \chi^2_1(1 - \alpha)}. Note that
+#' \eqn{H_{null}} if \eqn{\lambda \geq \chi^2_1(1 - \alpha)}. However,
 #' the asymptotic critical value is known to underestimate the exact critical
-#' value. Hence, the nominal significance level may not be achieved for small
-#' sample sizes (possibly \eqn{n \leq 10} or \eqn{n \leq 50}).
+#' value and the nominal significance level may not be achieved for small sample
+#' sizes. Argument `distribution` allows control of the distribution of
+#' the \eqn{\chi^2_1} test statistic under the null hypothesis by use of
+#' functions [depower::asymptotic()] and [depower::simulated()].
 #'
 #' @references
 #' \insertRef{rettiganti_2012}{depower}
@@ -64,6 +66,12 @@
 #' @param ratio_null (Scalar numeric: `1`; `(0, Inf)`)\cr
 #'        The ratio of means assumed under the null hypothesis (sample 2 / sample 1).
 #'        Typically, `ratio_null = 1` (no difference). See 'Details' for
+#'        additional information.
+#' @param distribution (function: [depower::asymptotic()] or
+#'        [depower::simulated()])\cr
+#'        The method used to define the distribution of the \eqn{\chi^2}
+#'        likelihood ratio test statistic under the null hypothesis. See
+#'        'Details' and [depower::asymptotic()] or [depower::simulated()] for
 #'        additional information.
 #' @param ... Optional arguments passed to the MLE function [depower::mle_bnb()].
 #'
@@ -94,6 +102,8 @@
 #'   12 \tab \tab `mle_message` \tab Information from the optimizer.
 #' }
 #'
+#' @seealso [depower::wald_test_bnb()]
+#'
 #' @examples
 #' #----------------------------------------------------------------------------
 #' # lrt_bnb() examples
@@ -112,15 +122,27 @@
 #' @importFrom stats pchisq
 #'
 #' @export
-lrt_bnb <- function(data, ratio_null = 1, ...) {
+lrt_bnb <- function(data, ratio_null = 1, distribution = asymptotic(), ...) {
   #-----------------------------------------------------------------------------
   # Check args
   #-----------------------------------------------------------------------------
-  if(!(is.list(data) && length(data) == 2L)) {
+  if (!(is.list(data) && length(data) == 2L)) {
     stop("Argument 'data' must be a list with 2 elements.")
   }
-  if(!(length(ratio_null) == 1L && ratio_null > 0)) {
+  if (any(data[[1L]] < 0, na.rm = TRUE) || any(data[[2L]] < 0, na.rm = TRUE)) {
+    stop("Argument 'data' must not contain negative numbers.")
+  }
+  if (!(length(ratio_null) == 1L && ratio_null > 0)) {
     stop("Argument 'ratio_null' must be a positive scalar numeric.")
+  }
+  if (
+    !is.list(distribution) ||
+      length(distribution$distribution) != 1L ||
+      !distribution$distribution %in% c("asymptotic", "simulated")
+  ) {
+    stop(
+      "Argument 'distribution' must be a function from 'depower::asymptotic()' or 'depower::simulated()'."
+    )
   }
 
   #-----------------------------------------------------------------------------
@@ -136,8 +158,37 @@ lrt_bnb <- function(data, ratio_null = 1, ...) {
   nll_alt <- mle_alt[["nll"]]
 
   lrt_stat <- 2 * (nll_null - nll_alt)
+  lrt_stat <- max(0, lrt_stat) # This might result in a negative number.
   lrt_df <- 1L # mle_alt[["nparams"]] - mle_null[["nparams"]]
-  lrt_p <- pchisq(lrt_stat, df = lrt_df, lower.tail = FALSE)
+
+  # Randomization test if needed
+  lrt_stat_null <- if (distribution$distribution == "simulated") {
+    if (is.null(distribution$test_stat_null)) {
+      test_stat_method <- "randomization"
+      call <- match.call()
+      randomize_tests(
+        data = data,
+        distribution = distribution,
+        paired = TRUE,
+        call = call
+      ) |>
+        extract(column = "result", element = "chisq", value = numeric(1L))
+    } else {
+      test_stat_method <- "parametric"
+      distribution$test_stat_null
+    }
+  } else {
+    test_stat_method <- NULL
+    NULL
+  }
+
+  # p-value
+  lrt_p <- pchisq2(
+    q = lrt_stat,
+    df = lrt_df,
+    lower.tail = FALSE,
+    q_null = lrt_stat_null
+  )
 
   #-----------------------------------------------------------------------------
   # Prepare result
@@ -156,7 +207,11 @@ lrt_bnb <- function(data, ratio_null = 1, ...) {
   mle_code <- mle_alt[["mle_code"]]
   mle_message <- mle_alt[["mle_message"]]
 
-  method <- "LRT for bivariate negative binomial ratio of means"
+  method <- paste0(
+    str_to_title(distribution$method),
+    if (is.null(test_stat_method)) NULL else paste0(" ", test_stat_method),
+    " LRT for bivariate negative binomial ratio of means"
+  )
 
   #-----------------------------------------------------------------------------
   # Return
