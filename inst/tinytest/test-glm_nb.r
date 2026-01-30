@@ -108,3 +108,19 @@ expect_equal(
   tolerance = 0.001,
   scale = 1
 )
+
+#-------------------------------------------------------------------------------
+# Same result as wald_test_nb()
+#-------------------------------------------------------------------------------
+set.seed(1234)
+d <- sim_nb(
+  n1 = 60,
+  n2 = 40,
+  mean1 = 10,
+  ratio = 1.5,
+  dispersion1 = 2,
+  dispersion2 = 8
+)
+wald <- glm_nb(d, equal_dispersion = FALSE, test = "wald", ci_level = 0.95)
+wald2 <- wald_test_nb(d, equal_dispersion = FALSE, ci_level = 0.95)
+expect_equal(wald$chisq, wald2$chisq, tolerance = 0.01)

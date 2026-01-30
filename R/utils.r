@@ -727,3 +727,656 @@ mle <- function(
   #-----------------------------------------------------------------------------
   out
 }
+
+#' Beta-Binomial quantile function
+#'
+#' @description
+#' Computes quantiles of the Beta-Binomial distribution.
+#'
+#' @details
+#' Returns the smallest integer \eqn{k} such that \eqn{P(Y \leq k) \geq p},
+#' where \eqn{Y \sim \text{BetaBinomial}(n, \alpha, \beta)}.
+#'
+#' The Beta-Binomial PMF is:
+#' \deqn{
+#'   P(Y = k) = \binom{n}{k} \frac{B(k + \alpha, n - k + \beta)}{B(\alpha, \beta)}
+#' }
+#'
+#' This implementation uses a recurrence relation for efficiency:
+#'
+#' \deqn{
+#'   \frac{P(k)}{P(k-1)} = \frac{n-k+1}{k} \cdot \frac{k - 1 + \alpha}{(n - k) + \beta}
+#' }
+#'
+#' or it's equivalent shifted form
+#'
+#' \deqn{
+#'   \frac{P(k+1)}{P(k)} = \frac{n-k}{k+1} \cdot \frac{k + \alpha}{(n - k - 1) + \beta}
+#' }
+#'
+#' @param p
+#' (numeric: `[0, 1]`)\cr
+#' Probability or vector of probabilities.
+#'
+#' @param size
+#' (integer: `[0, Inf)`)\cr
+#' Number of trials (n) or vector of trial counts.
+#'
+#' @param shape1
+#' (numeric: `(0, Inf)`)\cr
+#' First shape parameter \eqn{\alpha} of the Beta distribution, or vector.
+#'
+#' @param shape2
+#' (numeric: `(0, Inf)`)\cr
+#' Second shape parameter \eqn{\beta} of the Beta distribution, or vector.
+#'
+#' @returns
+#' Integer vector of quantiles, same length as the longest input.
+#'
+#' @examples
+#' library(depower)
+#'
+#' # Single quantile
+#' depower:::qbetabinom(0.5, size = 100, shape1 = 2, shape2 = 2)
+#'
+#' # Multiple quantiles
+#' depower:::qbetabinom(c(0.025, 0.975), size = 100, shape1 = 10, shape2 = 5)
+#'
+#' # Vectorized over all arguments
+#' depower:::qbetabinom(
+#'   p = c(0.025, 0.975),
+#'   size = c(100, 200),
+#'   shape1 = c(10, 20),
+#'   shape2 = c(5, 10)
+#' )
+#'
+#' @noRd
+qbetabinom <- function(p, size, shape1, shape2) {
+  #-----------------------------------------------------------------------------
+  # Check arguments
+  #-----------------------------------------------------------------------------
+  if (anyNA(p) || anyNA(size) || anyNA(shape1) || anyNA(shape2)) {
+    stop("NA values not allowed in arguments.")
+  }
+  if (any(size < 0)) {
+    stop("Argument 'size' must be non-negative.")
+  }
+  if (any(shape1 <= 0) || any(shape2 <= 0)) {
+    stop("Arguments 'shape1' and 'shape2' must be positive.")
+  }
+
+  #-----------------------------------------------------------------------------
+  # Vectorize inputs
+  #-----------------------------------------------------------------------------
+  # vector names are used in the error messages
+  lens <- c(
+    p = length(p),
+    size = length(size),
+    shape1 = length(shape1),
+    shape2 = length(shape2)
+  )
+  max_len <- max(lens)
+
+  if (max_len == 1L) {
+    return(qbetabinom_scalar(p, size, shape1, shape2))
+  }
+
+  # Check for lengths that don't evenly divide max_len (would cause incomplete
+  # recycling). In contrast to e.g. qbinom() which silently recycles...
+  bad <- lens > 1L & max_len %% lens != 0L
+  if (any(bad)) {
+    stop(
+      "Lengths of arguments are not compatible because\nthey do not all evenly divide with the maximum length:\n",
+      paste0(names(lens), ": ", lens, collapse = "\n")
+    )
+  }
+
+  p <- rep_len(p, max_len)
+  size <- rep_len(size, max_len)
+  shape1 <- rep_len(shape1, max_len)
+  shape2 <- rep_len(shape2, max_len)
+
+  vapply(
+    X = seq_len(max_len),
+    FUN = function(i) qbetabinom_scalar(p[i], size[i], shape1[i], shape2[i]),
+    FUN.VALUE = integer(1L)
+  )
+}
+
+#' Scalar Beta-Binomial quantile function
+#'
+#' The non-vectorized backend of `qbetabinom()`.
+#'
+#' @inheritParams qbetabinom
+#'
+#' @returns
+#' Single integer quantile.
+#'
+#' @noRd
+qbetabinom_scalar <- function(p, size, shape1, shape2) {
+  n <- size
+  alpha <- shape1
+  beta <- shape2
+
+  #-----------------------------------------------------------------------------
+  # Edge cases
+  #-----------------------------------------------------------------------------
+  if (p <= 0) {
+    return(0L)
+  }
+  if (p >= 1) {
+    return(as.integer(n))
+  }
+
+  #-----------------------------------------------------------------------------
+  # Normal approximation
+  #-----------------------------------------------------------------------------
+  # Normal approximation only for roughly symmetric cases
+  # ok <- n > 100 &&
+  #   min(alpha, beta) > 5
+  # if (ok) {
+  #   ab_sum <- alpha + beta
+  #   mu <- n * alpha / ab_sum
+  #   sigma <- sqrt(n * alpha * beta * (ab_sum + n) / (ab_sum^2 * (ab_sum + 1)))
+  #   k_approx <- stats::qnorm(p, mu, sigma)
+  #   return(as.integer(max(0L, min(n, round(k_approx)))))
+  # }
+
+  #-----------------------------------------------------------------------------
+  # If P(Y=0) underflows to 0 (common when size is large and/or shape1 is small)
+  # the recurrence stays at 0 and the CDF never increases. In this case, the
+  # loop finishes and returns size, which can be incorrect for p < 1.
+  # Instead, use slow but more robust calculation here.
+  #-----------------------------------------------------------------------------
+  log_pmf_0 <- lbeta(alpha, n + beta) - lbeta(alpha, beta)
+  if (log_pmf_0 < log(.Machine$double.xmin)) {
+    # P(Y=0) underflows, so start CDF at k=1. quantile cannot be 0 here.
+    k <- seq_len(n)
+    log_pmf <- lchoose(n, k) +
+      lbeta(k + alpha, n - k + beta) -
+      lbeta(alpha, beta)
+
+    # m is the largest log-probability. Subtracting m shifts all log-probs so
+    # the largest becomes 0. This guarantees exp(log_pmf - m) <= 1, preventing
+    # overflow, and makes very small terms less likely to underflow to 0.
+    m <- max(log_pmf)
+    # These are scaled weights, proportional to the original probabilities:
+    # w_i = exp(log_pmf_i - m) = exp(log_pmf_i) / exp(m).
+    # They have the same ratios as the original pmf values, just rescaled.
+    w <- exp(log_pmf - m)
+    # Normalization constant on the scaled scale:
+    # If we multiplied back by exp(m), we'd recover the original sum of pmf's.
+    Z <- sum(w)
+    # The normalized cumulative distribution, computed stably.
+    cdf <- cumsum(w) / Z
+    return(as.integer(min(k[cdf >= p])))
+  }
+
+  #-----------------------------------------------------------------------------
+  # Sequential computation with recurrence relation
+  #
+  # Recurrence: P(k+1) / P(k) = [(n-k) / (k+1)] * [(k+a) / (n-k-1+b)]
+  # Equivalently: P(k) / P(k-1) = [(n-k+1) / k] * [(k-1+a) / (n-k+b)]
+  #
+  # This avoids computing lbeta() for every k, which is the main cost.
+  # Early stopping when CDF reaches target probability.
+  #-----------------------------------------------------------------------------
+  # Compute P(Y = 0) using log-scale for numerical stability
+  pmf <- exp(log_pmf_0)
+  cdf <- pmf
+
+  if (cdf >= p) {
+    return(0L)
+  }
+
+  # Sequential search with early stopping
+  for (k in seq_len(n)) {
+    ratio <- ((n - k + 1) / k) * ((k - 1 + alpha) / (n - k + beta))
+    pmf <- pmf * ratio
+    cdf <- cdf + pmf
+
+    if (cdf >= p) {
+      return(as.integer(k))
+    }
+  }
+
+  as.integer(n)
+}
+
+#' @title
+#' Clopper-Pearson exact confidence interval for a binomial proportion
+#'
+#' @description
+#' Calculates the Clopper-Pearson exact confidence interval for a binomial proportion.
+#'
+#' @details
+#' The Clopper-Pearson exact interval inverts the binomial test via Beta quantiles.
+#' The bounds \eqn{(\pi_L, \pi_U)} satisfy:
+#'
+#' \deqn{P(X \geq x \mid \pi = \pi_L) = \alpha/2}
+#' \deqn{P(X \leq x \mid \pi = \pi_U) = \alpha/2}
+#'
+#' With \eqn{x} successes in \eqn{n} trials,
+#'
+#' \deqn{\pi_L = B^{-1}\left(\frac{\alpha}{2}; x, n-x+1\right)}
+#' \deqn{\pi_U = B^{-1}\left(1-\frac{\alpha}{2}; x+1, n-x\right)}
+#'
+#' where \eqn{B^{-1}(q; a, b)} is the \eqn{q}-th quantile of
+#' \eqn{\text{Beta}(a, b)}.
+#'
+#' This method guarantees at least nominal coverage but is conservative
+#' (intervals are wider than necessary).
+#'
+#' @references
+#' \insertRef{newcombe_1998}{depower},
+#'
+#' \insertRef{wilson_1927}{depower},
+#'
+#' \insertRef{clopper_1934}{depower}
+#'
+#' @param x
+#' (integer: `[0, Inf)`)\cr
+#' Number of successes.
+#' Must be non-negative integers with `x <= n`.
+#'
+#' @param n
+#' (integer: `[1, Inf)`)\cr
+#' Number of trials.
+#' Must be positive integers.
+#'
+#' @param conf_level
+#' (Scalar numeric: `0.95`; `(0,1)`)\cr
+#' The confidence level.
+#'
+#' @returns
+#' A list with elements:
+#' \tabular{ll}{
+#'   Name \tab Description \cr
+#'   `lower` \tab Lower bound of the confidence interval. \cr
+#'   `upper` \tab Upper bound of the confidence interval.
+#' }
+#'
+#' @seealso
+#' [depower::eval_power_ci()],
+#' [depower::add_power_ci()],
+#' [depower::binom_ci_wilson()],
+#' [depower::binom_pi_bayes()]
+#'
+#' @examples
+#' #----------------------------------------------------------------------------
+#' # binom_ci_clopper_pearson() examples
+#' #----------------------------------------------------------------------------
+#' library(depower)
+#'
+#' # Single proportion: 80 successes out of 100 trials
+#' binom_ci_clopper_pearson(x = 80, n = 100)
+#'
+#' # Vectorized: multiple proportions
+#' binom_ci_clopper_pearson(x = c(8, 80, 800), n = c(10, 100, 1000))
+#'
+#' # 99% confidence interval
+#' binom_ci_clopper_pearson(x = 80, n = 100, conf_level = 0.99)
+#'
+#' @noRd
+binom_ci_clopper_pearson <- function(x, n, conf_level = 0.95) {
+  #-----------------------------------------------------------------------------
+  # Check arguments
+  #-----------------------------------------------------------------------------
+  if (!is.numeric(x) || any(x < 0) || any(x != round(x))) {
+    stop("Argument 'x' must be non-negative integers.")
+  }
+
+  if (!is.numeric(n) || any(n <= 0) || any(n != round(n))) {
+    stop("Argument 'n' must be positive integers.")
+  }
+
+  if (length(x) != length(n)) {
+    stop("Arguments 'x' and 'n' must be the same length.")
+  }
+
+  if (any(x > n)) {
+    stop("Argument 'x' must be less than or equal to 'n'.")
+  }
+
+  if (
+    !is.numeric(conf_level) ||
+      length(conf_level) != 1L ||
+      conf_level <= 0 ||
+      conf_level >= 1
+  ) {
+    stop("Argument 'conf_level' must be a scalar numeric in (0, 1).")
+  }
+
+  #-----------------------------------------------------------------------------
+  # Compute Clopper-Pearson exact interval
+  #-----------------------------------------------------------------------------
+  alpha <- 1 - conf_level
+
+  lower <- ifelse(
+    x == 0,
+    0,
+    stats::qbeta(alpha / 2, x, n - x + 1)
+  )
+
+  upper <- ifelse(
+    x == n,
+    1,
+    stats::qbeta(1 - alpha / 2, x + 1, n - x)
+  )
+
+  #-----------------------------------------------------------------------------
+  # Return
+  #-----------------------------------------------------------------------------
+  list(
+    lower = lower,
+    upper = upper
+  )
+}
+
+#' @title
+#' Wilson score confidence interval for a binomial proportion
+#'
+#' @description
+#' Calculates the Wilson score confidence interval for a binomial proportion.
+#'
+#' @details
+#' The Wilson score interval is derived from inverting the score test.
+#' Starting with the inequality
+#'
+#' \deqn{
+#'   \left| \frac{\hat{\pi}-\pi}{\sqrt{\pi(1-\pi)/n}} \right| \le z_{1-\alpha/2},
+#' }
+#'
+#' and solving the resulting quadratic for \eqn{\pi} yields
+#'
+#' \deqn{
+#'   \frac{\hat{\pi}+\frac{z^2}{2n} \pm z \sqrt{\frac{\hat{\pi}(1-\hat{\pi})}{n}+\frac{z^2}{4n^2}}}{1+\frac{z^2}{n}},
+#' }
+#'
+#' with \eqn{z = z_{1-\alpha/2}} and \eqn{\hat{\pi} = x/n}.
+#'
+#' @references
+#' \insertRef{newcombe_1998}{depower},
+#'
+#' \insertRef{wilson_1927}{depower},
+#'
+#' \insertRef{clopper_1934}{depower}
+#'
+#' @param x
+#' (integer: `[0, Inf)`)\cr
+#' Number of successes.
+#' Must be non-negative integers with `x <= n`.
+#'
+#' @param n
+#' (integer: `[1, Inf)`)\cr
+#' Number of trials.
+#' Must be positive integers.
+#'
+#' @param conf_level
+#' (Scalar numeric: `0.95`; `(0,1)`)\cr
+#' The confidence level.
+#'
+#' @returns
+#' A list with elements:
+#' \tabular{ll}{
+#'   Name \tab Description \cr
+#'   `lower` \tab Lower bound of the confidence interval. \cr
+#'   `upper` \tab Upper bound of the confidence interval.
+#' }
+#'
+#' @seealso
+#' [depower::eval_power_ci()],
+#' [depower::add_power_ci()],
+#' [depower::binom_ci_clopper_pearson()],
+#' [depower::binom_pi_bayes()]
+#'
+#' @examples
+#' #----------------------------------------------------------------------------
+#' # binom_ci_wilson() examples
+#' #----------------------------------------------------------------------------
+#' library(depower)
+#'
+#' # Single proportion: 80 successes out of 100 trials
+#' binom_ci_wilson(x = 80, n = 100)
+#'
+#' # Vectorized: multiple proportions
+#' binom_ci_wilson(x = c(8, 80, 800), n = c(10, 100, 1000))
+#'
+#' # 99% confidence interval
+#' binom_ci_wilson(x = 80, n = 100, conf_level = 0.99)
+#'
+#' @noRd
+binom_ci_wilson <- function(x, n, conf_level = 0.95) {
+  #-----------------------------------------------------------------------------
+  # Check arguments
+  #-----------------------------------------------------------------------------
+  if (!is.numeric(x) || any(x < 0) || any(x != round(x))) {
+    stop("Argument 'x' must be non-negative integers.")
+  }
+
+  if (!is.numeric(n) || any(n <= 0) || any(n != round(n))) {
+    stop("Argument 'n' must be positive integers.")
+  }
+
+  if (length(x) != length(n)) {
+    stop("Arguments 'x' and 'n' must be the same length.")
+  }
+
+  if (any(x > n)) {
+    stop("Argument 'x' must be less than or equal to 'n'.")
+  }
+
+  if (
+    !is.numeric(conf_level) ||
+      length(conf_level) != 1L ||
+      conf_level <= 0 ||
+      conf_level >= 1
+  ) {
+    stop("Argument 'conf_level' must be a scalar numeric in (0, 1).")
+  }
+
+  #-----------------------------------------------------------------------------
+  # Compute Wilson score interval
+  #-----------------------------------------------------------------------------
+  alpha <- 1 - conf_level
+  p_hat <- x / n
+  z <- stats::qnorm(1 - alpha / 2)
+
+  denom <- 1 + z^2 / n
+  center <- (p_hat + z^2 / (2 * n)) / denom
+  margin <- z * sqrt(p_hat * (1 - p_hat) / n + z^2 / (4 * n^2)) / denom
+
+  lower <- center - margin
+  upper <- center + margin
+
+  #-----------------------------------------------------------------------------
+  # Return
+  #-----------------------------------------------------------------------------
+  list(
+    lower = lower,
+    upper = upper
+  )
+}
+
+#' @title
+#' Bayesian posterior predictive interval for a binomial proportion
+#'
+#' @description
+#' Calculates the Bayesian posterior predictive interval for a binomial proportion.
+#' The interval quantifies the expected range of proportion estimates from a future study.
+#'
+#' @details
+#' With a \eqn{\text{Beta}(\alpha, \beta)} prior on the true proportion \eqn{\pi},
+#' the posterior after observing \eqn{x} successes in \eqn{n} trials is:
+#' \deqn{
+#'   \pi \mid X = x \sim \text{Beta}(\alpha + x, \beta + n - x)
+#' }
+#'
+#' The posterior predictive distribution for \eqn{Y}, the number of successes in a future
+#' study with \eqn{m} trials, is Beta-Binomial:
+#' \deqn{
+#'   Y \mid X = x \sim \text{BetaBinomial}(m, \alpha + x, \beta + n - x)
+#' }
+#'
+#' The posterior predictive interval is constructed from quantiles of this
+#' distribution, expressed as proportions \eqn{Y/m}.
+#'
+#' The posterior predictive mean and variance of \eqn{\hat{\pi}_{\text{new}} = Y/m} are:
+#' \deqn{
+#' \begin{aligned}
+#'   E[\hat{\pi}_{\text{new}} \mid X = x] &= \frac{\alpha + x}{\alpha + \beta + n} \\
+#'   \text{Var}[\hat{\pi}_{\text{new}} \mid X = x]
+#'   &= \frac
+#'       {(\alpha + x)(\beta + n - x)(\alpha + \beta + n + m)}
+#'       {m (\alpha + \beta + n)^{2} (\alpha + \beta + n + 1)}.
+#' \end{aligned}
+#' }
+#'
+#' @references
+#' \insertRef{gelman_2013}{depower}
+#'
+#' @param x
+#' (integer: `[0, Inf)`)\cr
+#' Number of successes.
+#' Must be non-negative integers with `x <= n`.
+#'
+#' @param n
+#' (integer: `[1, Inf)`)\cr
+#' Number of trials.
+#'
+#' @param future_n
+#' (integer or `NULL`: `NULL`; `[1, Inf)`)\cr
+#' Number of trials in the future study.
+#' If `NULL` (default), uses the same number as the observed study (`n`).
+#'
+#' @param pred_level
+#' (Scalar numeric: `0.95`; `(0,1)`)\cr
+#' The posterior predictive interval level.
+#'
+#' @param prior
+#' (Numeric vector of length 2: `c(1, 1)`; each `(0, Inf)`)\cr
+#' Parameters \eqn{(\alpha, \beta)} for the Beta prior on the true proportion.
+#' Default `c(1, 1)` is the uniform prior.
+#' Use `c(0.5, 0.5)` for the Jeffreys prior.
+#'
+#' @returns
+#' A list with elements:
+#' \tabular{ll}{
+#'   Name \tab Description \cr
+#'   `mean` \tab Predictive mean of future proportion estimate. \cr
+#'   `lower` \tab Lower bound of posterior predictive interval. \cr
+#'   `upper` \tab Upper bound of posterior predictive interval.
+#' }
+#'
+#' @seealso
+#' [depower::eval_power_pi()],
+#' [depower::add_power_pi()],
+#' [depower::binom_ci_wilson()],
+#' [depower::binom_ci_clopper_pearson()]
+#'
+#' @examples
+#' #----------------------------------------------------------------------------
+#' # binom_pi_bayes() examples
+#' #----------------------------------------------------------------------------
+#' library(depower)
+#'
+#' # Single proportion: 80 successes out of 100 trials
+#' binom_pi_bayes(x = 80, n = 100)
+#'
+#' # Predict for a larger future study (narrower interval)
+#' binom_pi_bayes(x = 80, n = 100, future_n = 1000)
+#'
+#' # Predict for a smaller future study (wider interval)
+#' binom_pi_bayes(x = 80, n = 100, future_n = 50)
+#'
+#' # Use Jeffreys prior instead of uniform
+#' binom_pi_bayes(x = 80, n = 100, prior = c(0.5, 0.5))
+#'
+#' # Vectorized: multiple proportions
+#' binom_pi_bayes(x = c(8, 80, 800), n = c(10, 100, 1000))
+#'
+#' # 99% predictive interval
+#' binom_pi_bayes(x = 80, n = 100, pred_level = 0.99)
+#'
+#' @noRd
+binom_pi_bayes <- function(
+  x,
+  n,
+  future_n = NULL,
+  pred_level = 0.95,
+  prior = c(1, 1)
+) {
+  #-----------------------------------------------------------------------------
+  # Check arguments
+  #-----------------------------------------------------------------------------
+  if (!is.numeric(x) || any(x < 0) || any(x != round(x))) {
+    stop("Argument 'x' must be non-negative integers.")
+  }
+
+  if (!is.numeric(n) || any(n <= 0) || any(n != round(n))) {
+    stop("Argument 'n' must be positive integers.")
+  }
+
+  if (length(x) != length(n)) {
+    stop("Arguments 'x' and 'n' must be the same length.")
+  }
+
+  if (any(x > n)) {
+    stop("Argument 'x' must be less than or equal to 'n'.")
+  }
+
+  if (!is.null(future_n)) {
+    if (
+      !is.numeric(future_n) ||
+        any(future_n <= 0) ||
+        any(future_n != round(future_n))
+    ) {
+      stop("Argument 'future_n' must be positive integers or NULL.")
+    }
+    if (length(future_n) != 1L && length(future_n) != length(x)) {
+      stop("Argument 'future_n' must be length 1 or the same length as 'x'.")
+    }
+  }
+
+  if (
+    !is.numeric(pred_level) ||
+      length(pred_level) != 1L ||
+      pred_level <= 0 ||
+      pred_level >= 1
+  ) {
+    stop("Argument 'pred_level' must be a scalar numeric in (0, 1).")
+  }
+
+  if (!is.numeric(prior) || length(prior) != 2L || any(prior <= 0)) {
+    stop("Argument 'prior' must be a positive numeric vector of length 2.")
+  }
+
+  #-----------------------------------------------------------------------------
+  # Compute posterior predictive interval
+  #-----------------------------------------------------------------------------
+  alpha_pred <- 1 - pred_level
+
+  # Future study size: use future_n if provided, otherwise match observed
+  m <- if (is.null(future_n)) n else rep_len(future_n, length(x))
+
+  # Posterior parameters: Beta(alpha_post, beta_post)
+  alpha_post <- prior[1] + x
+  beta_post <- prior[2] + n - x
+
+  # Predictive mean: E[Y/m | X = x]
+  pred_mean <- alpha_post / (alpha_post + beta_post)
+
+  # Posterior predictive interval from Beta-Binomial quantiles
+  pred_lower <- qbetabinom(alpha_pred / 2, m, alpha_post, beta_post) / m
+  pred_upper <- qbetabinom(1 - alpha_pred / 2, m, alpha_post, beta_post) / m
+
+  #-----------------------------------------------------------------------------
+  # Return
+  #-----------------------------------------------------------------------------
+  list(
+    mean = pred_mean,
+    lower = pred_lower,
+    upper = pred_upper,
+    future_n = m
+  )
+}

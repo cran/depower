@@ -134,7 +134,7 @@
 #' #----------------------------------------------------------------------------
 #' # Use the same data, but as a data frame instead of list
 #' set.seed(1234)
-#' d <- sim_nb(
+#' df <- sim_nb(
 #'   n1 = 60,
 #'   n2 = 40,
 #'   mean1 = 10,
@@ -146,13 +146,13 @@
 #'
 #' mod_alt <- glmmTMB::glmmTMB(
 #'   formula = value ~ condition,
-#'   data = d,
+#'   data = df,
 #'   dispformula = ~ condition,
 #'   family = glmmTMB::nbinom2
 #' )
 #' mod_null <- glmmTMB::glmmTMB(
 #'   formula = value ~ 1,
-#'   data = d,
+#'   data = df,
 #'   dispformula = ~ condition,
 #'   family = glmmTMB::nbinom2
 #' )
@@ -163,6 +163,12 @@
 #' wald_chisq
 #'
 #' anova(mod_null, mod_alt)
+#'
+#' #----------------------------------------------------------------------------
+#' # Compare results to wald_test_nb()
+#' #----------------------------------------------------------------------------
+#' wald2 <- wald_test_nb(d, equal_dispersion = FALSE, ci_level = 0.95)
+#' all.equal(wald$chisq, wald2$chisq, tolerance = 0.01)
 #'
 #' @importFrom stats logLik pchisq confint vcov qnorm
 #'
@@ -290,7 +296,7 @@ glm_nb <- function(
         dimnames(dispersion_ci)[[1]],
         "sigma" = function(x) x,
         "d~(Intercept)" = exp,
-        stop("Unable to select tranformation function for dispersion.")
+        stop("Unable to select transformation function for dispersion.")
       )
     } else {
       out_ci <- confint(

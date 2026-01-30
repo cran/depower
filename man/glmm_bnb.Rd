@@ -15,7 +15,7 @@ Each vector must be sorted by the subject/item index and must be the
 same sample size. \link[base]{NA}s are silently excluded. The default
 output from \code{\link[=sim_bnb]{sim_bnb()}}.}
 
-\item{test}{(String: \code{"wald"}; \verb{"c("wald", "lrt")})\cr
+\item{test}{(String: \code{"wald"}; \code{c("wald", "lrt")})\cr
 The statistical method used for the test results. \code{test = "wald"}
 performs a Wald test and optionally the Wald confidence intervals.
 \code{test = "lrt"} performs a likelihood ratio test and optionally

@@ -126,7 +126,7 @@ mle_bnb_null <- function(
   ...
 ) {
   #-----------------------------------------------------------------------------
-  # Check args
+  # Check arguments
   #-----------------------------------------------------------------------------
   if (!(is.list(data) && length(data) == 2L)) {
     stop("Argument 'data' must be a list with 2 elements.")
@@ -135,9 +135,6 @@ mle_bnb_null <- function(
     stop("Argument 'ratio_null' must be a positive scalar numeric.")
   }
 
-  #-----------------------------------------------------------------------------
-  # Check arguments
-  #-----------------------------------------------------------------------------
   value1 <- data[[1L]]
   value2 <- data[[2L]]
 

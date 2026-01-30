@@ -8,8 +8,8 @@ power(data, ..., alpha = 0.05, list_column = FALSE, ncores = 1L)
 }
 \arguments{
 \item{data}{(depower)\cr
-The simulated data returned by \code{\link[=sim_log_lognormal]{sim_log_lognormal()}},
-\code{\link[=sim_nb]{sim_nb()}}, or \code{\link[=sim_bnb]{sim_bnb()}}.}
+The simulated data returned by \code{\link[=sim_log_lognormal]{sim_log_lognormal()}}, \code{\link[=sim_nb]{sim_nb()}}, or \code{\link[=sim_bnb]{sim_bnb()}}.
+In each, argument \code{return_type} must be the default \code{"list"}.}
 
 \item{...}{(functions)\cr
 The function(s) used to perform the test. If empty, a default test
@@ -34,13 +34,13 @@ is large.}
 }
 \value{
 A data frame with the following columns appended to the \code{data} object:
-\tabular{lll}{
-Column \tab Name \tab Description \cr
-\tab \code{alpha}  \tab Type I assertion probability. \cr
-\tab \code{test}   \tab Name-value pair of the function and statistical test: \verb{c(as.character(...) = names(...)}. \cr
-\tab \code{data}   \tab List-column of simulated data. \cr
-\tab \code{result} \tab List-column of test results. \cr
-\tab \code{power}  \tab Power of the test for corresponding parameters.
+\tabular{ll}{
+Name \tab Description \cr
+\code{alpha}  \tab Type I assertion probability. \cr
+\code{test}   \tab Name-value pair of the function and statistical test: \verb{c(as.character(...) = names(...)}. \cr
+\code{data}   \tab List-column of simulated data. \cr
+\code{result} \tab List-column of test results. \cr
+\code{power}  \tab Power of the test for corresponding parameters.
 }
 
 For \code{power(list_column = FALSE)}, columns \code{data}, and \code{result} are excluded from
@@ -186,8 +186,14 @@ statistic and p-value would not be calculated. Note that simulated data from
 \code{sim_nb()} and \code{sim_bnb()} may also reduce \code{nsims} during the data simulation
 phase.
 
-The \code{nsims} column in the return data frame is the effective number of
-simulations for power results.
+\code{nsims} denotes the effective number of simulated datasets under the alternative hypothesis, resulting in the equivalent number of hypothesis tests performed used to calculate power.
+If \code{nsims} is too small, the power estimate will have high uncertainty (wide confidence/prediction intervals).
+If \code{nsims} is too large, computation time may be prohibitive.
+To aid in choosing an appropriate \code{nsims}, functions \code{\link[=eval_power_ci]{eval_power_ci()}} and \code{\link[=eval_power_pi]{eval_power_pi()}} are helpful to understand the precision of the interval for power, before simulation takes place.
+Their counterparts, \code{\link[=add_power_ci]{add_power_ci()}} and \code{\link[=add_power_pi]{add_power_pi()}} add intervals for power to the object returned by \code{\link[=power]{power()}}.
+Functions \code{\link[=eval_power_ci]{eval_power_ci()}} and \code{\link[=add_power_ci]{add_power_ci()}} quantify uncertainty in the true power parameter, and answer the question, "What is the plausible range of true power values given my simulation results?"
+Functions \code{\link[=eval_power_pi]{eval_power_pi()}} and \code{\link[=add_power_pi]{add_power_pi()}} quantify the expected range of power estimates from a future simulation study, and answer the question, "If I run a new simulation study with \eqn{m} simulations, what range of power estimates might I observe?" which is particularly useful for deciding the optimal \code{nsims}.
+When the prediction intervals from \code{\link[=eval_power_pi]{eval_power_pi()}} are too wide, consider choosing a larger \code{nsims} before running a power simulation.
 }
 }
 \examples{
@@ -217,6 +223,10 @@ power(
   "Welch's t-Test" = t_test_welch(alternative = "greater"),
   alpha = 0.01
 )
+
+# The 95\% posterior predictive interval for power based on 1000 simulations
+power(data) |>
+  add_power_pi()
 
 # Power for dependent two-sample t-test
 set.seed(1234)
@@ -292,5 +302,9 @@ sim_bnb(
 \insertRef{vickerstaff_2019}{depower}
 }
 \seealso{
-\code{\link[=plot.depower]{plot.depower()}}
+\code{\link[=plot.depower]{plot.depower()}},
+\code{\link[=add_power_ci]{add_power_ci()}},
+\code{\link[=add_power_pi]{add_power_pi()}},
+\code{\link[=eval_power_ci]{eval_power_ci()}},
+\code{\link[=eval_power_pi]{eval_power_pi()}}
 }

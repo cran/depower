@@ -72,6 +72,9 @@
 #' library(depower)
 #'
 #' # Power for independent two-sample t-test
+#' # Includes shaded region for Bayesian poster predictive interval which
+#' # summarizes the plausible range of power estimates for a future simulation
+#' # study based on 500 data simulations.
 #' set.seed(1234)
 #' sim_log_lognormal(
 #'   n1 = c(10, 15),
@@ -82,6 +85,7 @@
 #'   nsims = 500
 #' ) |>
 #'   power(alpha = 0.05) |>
+#'   add_power_pi() |>
 #'   plot()
 #'
 #' # Power for dependent two-sample t-test
@@ -154,7 +158,8 @@
 #'                   mutate bind_cols
 #' @importFrom ggplot2 ggplot aes facet_grid geom_point geom_line labs vars
 #'                     labeller label_both scale_y_continuous scale_x_continuous
-#'                     scale_color_discrete geom_hline
+#'                     scale_color_discrete scale_fill_discrete geom_hline
+#'                     geom_ribbon
 #' @importFrom scales percent
 #'
 #' @export
@@ -224,6 +229,12 @@ plot.depower <- function(
   }
 
   #-----------------------------------------------------------------------------
+  # Detect interval type
+  #-----------------------------------------------------------------------------
+  interval <- detect_interval(x)
+  attr(x, "interval") <- interval
+
+  #-----------------------------------------------------------------------------
   # Jump to next method
   #-----------------------------------------------------------------------------
   NextMethod("plot")
@@ -242,6 +253,11 @@ plot.log_lognormal_independent_two_sample <- function(
   caption_width = 70L,
   ...
 ) {
+  #-----------------------------------------------------------------------------
+  # Get interval type
+  #-----------------------------------------------------------------------------
+  interval <- attr(x, "interval")
+
   #-----------------------------------------------------------------------------
   # Get axis labels
   #-----------------------------------------------------------------------------
@@ -292,12 +308,14 @@ plot.log_lognormal_independent_two_sample <- function(
     aes(x = .data[[x_axis]], y = .data[[y_axis]])
   ) +
     geom_builder(
+      plot_data$df_plot,
       plot_data$condition_at,
       x_axis,
       y_axis,
       color,
       facet_row,
       facet_col,
+      interval,
       hline,
       caption,
       caption_width,
@@ -318,6 +336,11 @@ plot.log_lognormal_dependent_two_sample <- function(
   caption_width = 70L,
   ...
 ) {
+  #-----------------------------------------------------------------------------
+  # Get interval type
+  #-----------------------------------------------------------------------------
+  interval <- attr(x, "interval")
+
   #-----------------------------------------------------------------------------
   # Get axis labels
   #-----------------------------------------------------------------------------
@@ -382,12 +405,14 @@ plot.log_lognormal_dependent_two_sample <- function(
     aes(x = .data[[x_axis]], y = .data[[y_axis]])
   ) +
     geom_builder(
+      plot_data$df_plot,
       plot_data$condition_at,
       x_axis,
       y_axis,
       color,
       facet_row,
       facet_col,
+      interval,
       hline,
       caption,
       caption_width,
@@ -408,6 +433,11 @@ plot.log_lognormal_mixed_two_sample <- function(
   caption_width = 70L,
   ...
 ) {
+  #-----------------------------------------------------------------------------
+  # Get interval type
+  #-----------------------------------------------------------------------------
+  interval <- attr(x, "interval")
+
   #-----------------------------------------------------------------------------
   # Get axis labels
   #-----------------------------------------------------------------------------
@@ -488,12 +518,14 @@ plot.log_lognormal_mixed_two_sample <- function(
     aes(x = .data[[x_axis]], y = .data[[y_axis]])
   ) +
     geom_builder(
+      plot_data$df_plot,
       plot_data$condition_at,
       x_axis,
       y_axis,
       color,
       facet_row,
       facet_col,
+      interval,
       hline,
       caption,
       caption_width,
@@ -514,6 +546,11 @@ plot.log_lognormal_one_sample <- function(
   caption_width = 70L,
   ...
 ) {
+  #-----------------------------------------------------------------------------
+  # Get interval type
+  #-----------------------------------------------------------------------------
+  interval <- attr(x, "interval")
+
   #-----------------------------------------------------------------------------
   # Get axis labels
   #-----------------------------------------------------------------------------
@@ -554,12 +591,14 @@ plot.log_lognormal_one_sample <- function(
     aes(x = .data[[x_axis]], y = .data[[y_axis]])
   ) +
     geom_builder(
+      plot_data$df_plot,
       plot_data$condition_at,
       x_axis,
       y_axis,
       color,
       facet_row,
       facet_col,
+      interval,
       hline,
       caption,
       caption_width,
@@ -580,6 +619,11 @@ plot.nb <- function(
   caption_width = 70L,
   ...
 ) {
+  #-----------------------------------------------------------------------------
+  # Get interval type
+  #-----------------------------------------------------------------------------
+  interval <- attr(x, "interval")
+
   #-----------------------------------------------------------------------------
   # Get axis labels
   #-----------------------------------------------------------------------------
@@ -630,12 +674,14 @@ plot.nb <- function(
     aes(x = .data[[x_axis]], y = .data[[y_axis]])
   ) +
     geom_builder(
+      plot_data$df_plot,
       plot_data$condition_at,
       x_axis,
       y_axis,
       color,
       facet_row,
       facet_col,
+      interval,
       hline,
       caption,
       caption_width,
@@ -656,6 +702,11 @@ plot.bnb <- function(
   caption_width = 70L,
   ...
 ) {
+  #-----------------------------------------------------------------------------
+  # Get interval type
+  #-----------------------------------------------------------------------------
+  interval <- attr(x, "interval")
+
   #-----------------------------------------------------------------------------
   # Get axis labels
   #-----------------------------------------------------------------------------
@@ -718,12 +769,14 @@ plot.bnb <- function(
     aes(x = .data[[x_axis]], y = .data[[y_axis]])
   ) +
     geom_builder(
+      plot_data$df_plot,
       plot_data$condition_at,
       x_axis,
       y_axis,
       color,
       facet_row,
       facet_col,
+      interval,
       hline,
       caption,
       caption_width,
@@ -734,6 +787,65 @@ plot.bnb <- function(
 #===============================================================================
 # Plot helper functions
 #===============================================================================
+#-------------------------------------------------------------------------------
+# Detect interval type from data
+#-------------------------------------------------------------------------------
+detect_interval <- function(data) {
+  has_ci <- all(c("power_ci_lower", "power_ci_upper") %in% names(data))
+  has_pi <- all(c("power_pi_lower", "power_pi_upper") %in% names(data))
+
+  if (has_ci && has_pi) {
+    # Both present: ignore both
+    list(
+      type = "none",
+      level = NULL,
+      method = NULL,
+      description = NULL,
+      future_nsims = NULL
+    )
+  } else if (has_ci) {
+    ci_info <- attr(data, "ci_info")
+    level <- ci_info$level %||% NA_real_
+    method <- ci_info$method %||% NA_character_
+    description <- ci_info$description %||% NA_character_
+    list(type = "ci", level = level, method = method, description = description)
+  } else if (has_pi) {
+    pi_info <- attr(data, "pi_info")
+    level <- pi_info$level %||% NA_real_
+    method <- pi_info$method %||% NA_character_
+    description <- pi_info$description %||% NA_character_
+    future_nsims <- pi_info$future_nsims
+
+    # Handle varying future_nsims
+    if (!is.null(future_nsims) && length(unique(future_nsims)) > 1L) {
+      future_nsims <- paste0(
+        "varying: min=",
+        min(future_nsims),
+        ",max=",
+        max(future_nsims)
+      )
+    } else if (!is.null(future_nsims)) {
+      future_nsims <- future_nsims[1L]
+    }
+
+    list(
+      type = "pi",
+      level = level,
+      method = method,
+      description = description,
+      future_nsims = future_nsims
+    )
+  } else {
+    list(
+      type = "none",
+      level = NULL,
+      method = NULL,
+      description = NULL,
+      future_nsims = NULL
+    )
+  }
+}
+
 #-------------------------------------------------------------------------------
 # Select plot axis
 #-------------------------------------------------------------------------------
@@ -974,18 +1086,46 @@ data_builder <- function(
 # Build geoms using a list
 #-------------------------------------------------------------------------------
 geom_builder <- function(
+  df_plot,
   condition_at,
   x_axis,
   y_axis,
   color,
   facet_row,
   facet_col,
+  interval,
   hline,
   caption,
   caption_width,
   axis_labels
 ) {
   list(
+    # Interval ribbon (added first so it's behind points/lines)
+    if (interval$type != "none") {
+      if (interval$type == "ci") {
+        lower_col <- "power_ci_lower"
+        upper_col <- "power_ci_upper"
+      } else {
+        lower_col <- "power_pi_lower"
+        upper_col <- "power_pi_upper"
+      }
+      if (is.na(color)) {
+        geom_ribbon(
+          aes(ymin = .data[[lower_col]], ymax = .data[[upper_col]]),
+          alpha = 0.2
+        )
+      } else {
+        geom_ribbon(
+          aes(
+            ymin = .data[[lower_col]],
+            ymax = .data[[upper_col]],
+            fill = .data[[color]],
+            group = .data[[color]]
+          ),
+          alpha = 0.2
+        )
+      }
+    },
     if (is.na(color)) {
       geom_point()
     } else {
@@ -1028,6 +1168,10 @@ geom_builder <- function(
       )
     },
     scale_color_discrete(labels = round2),
+    # Match fill colors to line colors when using ribbon
+    if (interval$type != "none" && !is.na(color)) {
+      scale_fill_discrete(guide = "none")
+    },
     labs(x = axis_labels[match(x_axis, names(axis_labels))]),
     labs(y = axis_labels[match(y_axis, names(axis_labels))]),
     if (!is.na(color)) {
@@ -1037,26 +1181,59 @@ geom_builder <- function(
       geom_hline(yintercept = hline, alpha = 0.5)
     },
     if (caption) {
-      labs(caption = caption_builder(condition_at, caption_width))
+      labs(caption = caption_builder(condition_at, caption_width, interval))
     }
   )
 }
 
 # Build caption for plot
-caption_builder <- function(condition_at, caption_width) {
-  if (length(condition_at) == 0L) {
+caption_builder <- function(condition_at, caption_width, interval) {
+  parts <- character(0)
+
+  # Conditioned on text
+  if (length(condition_at) > 0L) {
+    condition_text <- paste0(
+      "Conditioned on: ",
+      csw(
+        paste0(names(condition_at), "=", round2(condition_at)),
+        quote = FALSE,
+        and = TRUE,
+        period = TRUE,
+        new_line = Inf
+      )
+    )
+    parts <- c(parts, condition_text)
+  }
+
+  # Interval text
+  if (interval$type != "none") {
+    level_pct <- if (is.na(interval$level)) {
+      ""
+    } else {
+      paste0(round(interval$level * 100), "% ")
+    }
+    interval_text <- paste0(
+      "Shaded region: ",
+      level_pct,
+      interval$description,
+      " for power",
+      if (!is.null(interval$future_nsims)) {
+        paste0(
+          " assuming ",
+          interval$future_nsims,
+          " future simulations"
+        )
+      },
+      "."
+    )
+    parts <- c(parts, interval_text)
+  }
+
+  if (length(parts) == 0L) {
     return(NULL)
   }
-  paste0(
-    "Conditioned on: ",
-    csw(
-      paste0(names(condition_at), "=", round2(condition_at)),
-      quote = FALSE,
-      and = TRUE,
-      period = TRUE,
-      new_line = Inf
-    )
-  ) |>
+
+  paste(parts, collapse = " ") |>
     str_wrap(width = caption_width, collapse = "\n")
 }
 

@@ -55,7 +55,7 @@
 #'        Each vector must be sorted by the subject/item index and must be the
 #'        same sample size. \link[base]{NA}s are silently excluded. The default
 #'        output from [depower::sim_bnb()].
-#' @param test (String: `"wald"`; `"c("wald", "lrt")`)\cr
+#' @param test (String: `"wald"`; `c("wald", "lrt")`)\cr
 #'        The statistical method used for the test results. `test = "wald"`
 #'        performs a Wald test and optionally the Wald confidence intervals.
 #'        `test = "lrt"` performs a likelihood ratio test and optionally

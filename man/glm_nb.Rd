@@ -140,7 +140,7 @@ wald
 #----------------------------------------------------------------------------
 # Use the same data, but as a data frame instead of list
 set.seed(1234)
-d <- sim_nb(
+df <- sim_nb(
   n1 = 60,
   n2 = 40,
   mean1 = 10,
@@ -152,13 +152,13 @@ d <- sim_nb(
 
 mod_alt <- glmmTMB::glmmTMB(
   formula = value ~ condition,
-  data = d,
+  data = df,
   dispformula = ~ condition,
   family = glmmTMB::nbinom2
 )
 mod_null <- glmmTMB::glmmTMB(
   formula = value ~ 1,
-  data = d,
+  data = df,
   dispformula = ~ condition,
   family = glmmTMB::nbinom2
 )
@@ -169,6 +169,12 @@ wald_chisq <- summary(mod_alt)$coefficients$cond["condition2", "z value"]^2
 wald_chisq
 
 anova(mod_null, mod_alt)
+
+#----------------------------------------------------------------------------
+# Compare results to wald_test_nb()
+#----------------------------------------------------------------------------
+wald2 <- wald_test_nb(d, equal_dispersion = FALSE, ci_level = 0.95)
+all.equal(wald$chisq, wald2$chisq, tolerance = 0.01)
 
 }
 \references{

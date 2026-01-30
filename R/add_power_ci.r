@@ -1,0 +1,180 @@
+#' Add confidence intervals for power estimates
+#'
+#' @description
+#' Calculates and adds confidence intervals for power estimates to objects returned by [depower::power()].
+#' The confidence interval quantifies uncertainty about the true power parameter.
+#'
+#' @details
+#' Power estimation via simulation is a binomial proportion problem.
+#' The confidence interval answers: "What is the plausible range of true power values given my simulation results?"
+#'
+#' Let \eqn{\pi} denote the true power value, \eqn{\hat{\pi} = x/n} denote the observed power value, \eqn{n} denote the number of simulations, and \eqn{x = \text{round}(\hat{\pi} \cdot n)} denote the number of rejections.
+#' Two methods are available.
+#'
+#' ## Wilson Score Interval
+#'
+#' The Wilson score interval is derived from inverting the score test.
+#' Starting with the inequality
+#'
+#' \deqn{
+#'   \left| \frac{\hat{\pi}-\pi}{\sqrt{\pi(1-\pi)/n}} \right| \le z_{1-\alpha/2},
+#' }
+#'
+#' and solving the resulting quadratic for \eqn{\pi} yields
+#'
+#' \deqn{
+#'   \frac{\hat{\pi}+\frac{z^2}{2n} \pm z \sqrt{\frac{\hat{\pi}(1-\hat{\pi})}{n}+\frac{z^2}{4n^2}}}{1+\frac{z^2}{n}},
+#' }
+#'
+#' with \eqn{z = z_{1-\alpha/2}} and \eqn{\hat{\pi} = x/n}.
+#'
+#' ## Clopper-Pearson Interval
+#'
+#' The Clopper-Pearson exact interval inverts the binomial test via Beta quantiles.
+#' The bounds \eqn{(\pi_L, \pi_U)} satisfy:
+#'
+#' \deqn{P(X \geq x \mid \pi = \pi_L) = \alpha/2}
+#' \deqn{P(X \leq x \mid \pi = \pi_U) = \alpha/2}
+#'
+#' With \eqn{x} successes in \eqn{n} trials,
+#'
+#' \deqn{\pi_L = B^{-1}\left(\frac{\alpha}{2}; x, n-x+1\right)}
+#' \deqn{\pi_U = B^{-1}\left(1-\frac{\alpha}{2}; x+1, n-x\right)}
+#'
+#' where \eqn{B^{-1}(q; a, b)} is the \eqn{q}-th quantile of
+#' \eqn{\text{Beta}(a, b)}.
+#'
+#' This method guarantees at least nominal coverage but is conservative
+#' (intervals are wider than necessary).
+#'
+#' ## Approximate parametric tests
+#'
+#' When power is computed using approximate parametric tests (see [depower::simulated()]), the power estimate and confidence/prediction intervals apply to the Monte Carlo test power \eqn{\mu_K = P(\hat{p} \leq \alpha)} rather than the exact test power \eqn{\pi = P(p \leq \alpha)}.
+#' These quantities converge as the number of datasets simulated under the null hypothesis \eqn{K} increases.
+#' The minimum observable p-value is \eqn{1/(K+1)}, so \eqn{K > 1/\alpha - 1} is required to observe any rejections.
+#' For practical accuracy, we recommend choosing \eqn{\text{max}(5000, K \gg 1/\alpha - 1)} for most scenarios.
+#' For example, if \eqn{\alpha = 0.05}, use `simulated(nsims = 5000)`.
+#'
+#' @references
+#' \insertRef{newcombe_1998}{depower},
+#'
+#' \insertRef{wilson_1927}{depower},
+#'
+#' \insertRef{clopper_1934}{depower}
+#'
+#' @param x
+#' (data.frame)\cr
+#' A data frame returned by [depower::power()], containing columns `power` and `nsims`.
+#'
+#' @param ci_level
+#' (Scalar numeric: `0.95`; `(0,1)`)\cr
+#' The confidence interval level.
+#'
+#' @param method
+#' (Scalar character: `"wilson"`; `c("wilson", "exact")`)\cr
+#' Method for computing confidence intervals.
+#' One of `"wilson"` (default) or `"exact"`.
+#'
+#' @returns
+#' The input data frame with additional columns:
+#' \tabular{ll}{
+#'   Name \tab Description \cr
+#'   `power_ci_lower`   \tab Lower bound of confidence interval. \cr
+#'   `power_ci_upper`   \tab Upper bound of confidence interval.
+#' }
+#' and added attribute `"ci_info"` containing the method description, method name and confidence level.
+#'
+#' @seealso
+#' [depower::power()],
+#' [depower::eval_power_ci()],
+#' [depower::add_power_pi()]
+#'
+#' @examples
+#' #----------------------------------------------------------------------------
+#' # add_power_ci() examples
+#' #----------------------------------------------------------------------------
+#' library(depower)
+#'
+#' set.seed(1234)
+#' x <- sim_nb(
+#'   n1 = 10,
+#'   mean1 = 10,
+#'   ratio = c(1.4, 1.6),
+#'   dispersion1 = 2,
+#'   nsims = 200
+#' ) |>
+#'   power(wald_test_nb())
+#'
+#' # Compare methods
+#' add_power_ci(x, method = "wilson")
+#' add_power_ci(x, method = "exact")
+#'
+#' # 99% confidence interval
+#' add_power_ci(x, ci_level = 0.99)
+#'
+#' # Plot with shaded region for confidence interval of the power estimate.
+#' add_power_ci(x) |>
+#'   plot()
+#'
+#' @export
+add_power_ci <- function(
+  x,
+  ci_level = 0.95,
+  method = c("wilson", "exact")
+) {
+  #-----------------------------------------------------------------------------
+  # Check arguments
+  #-----------------------------------------------------------------------------
+  if (!is.data.frame(x)) {
+    stop("Argument 'x' must be a data frame.")
+  }
+  if (!all(c("power", "nsims") %in% names(x))) {
+    stop("Argument 'x' must contain columns 'power' and 'nsims'.")
+  }
+
+  if (
+    !is.numeric(ci_level) ||
+      length(ci_level) != 1L ||
+      ci_level <= 0 ||
+      ci_level >= 1
+  ) {
+    stop("Argument 'ci_level' must be a scalar numeric in (0, 1).")
+  }
+
+  method <- match.arg(method)
+
+  #-----------------------------------------------------------------------------
+  # Compute confidence intervals
+  #-----------------------------------------------------------------------------
+  n_rejects <- round(x$power * x$nsims)
+
+  if (method == "wilson") {
+    ci_result <- binom_ci_wilson(
+      x = n_rejects,
+      n = x$nsims,
+      conf_level = ci_level
+    )
+  } else {
+    ci_result <- binom_ci_clopper_pearson(
+      x = n_rejects,
+      n = x$nsims,
+      conf_level = ci_level
+    )
+  }
+
+  #-----------------------------------------------------------------------------
+  # Add columns to result
+  #-----------------------------------------------------------------------------
+  x$power_ci_lower <- ci_result$lower
+  x$power_ci_upper <- ci_result$upper
+
+  #-----------------------------------------------------------------------------
+  # Result
+  #-----------------------------------------------------------------------------
+  attr(x, "ci_info") <- list(
+    description = "confidence interval",
+    method = switch(method, "wilson" = "Wilson", "exact" = "Clopper-Pearson"),
+    level = ci_level
+  )
+  x
+}

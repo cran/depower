@@ -2,7 +2,7 @@
 % Please edit documentation in R/sim_nb.r
 \name{sim_nb}
 \alias{sim_nb}
-\title{Simulate data from a NB distribution}
+\title{Simulate NB data}
 \usage{
 sim_nb(
   n1,
@@ -207,6 +207,8 @@ sim_nb(
 
 #----------------------------------------------------------------------------
 # Visualization of the NB distribution as dispersion varies between groups.
+# Small dispersion values result in higher variance (overdispersed) and
+# large dispersion values result in lower variance (converges to Poisson).
 #----------------------------------------------------------------------------
 disp <- expand.grid(c(1, 10, 100), c(1, 10, 100))
 set.seed(1234)

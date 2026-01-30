@@ -1,4 +1,4 @@
-#' Simulate data from a NB distribution
+#' Simulate NB data
 #'
 #' Simulate data from two independent negative binomial (NB) distributions. For
 #' paired data, see [depower::sim_bnb()].
@@ -189,6 +189,8 @@
 #'
 #' #----------------------------------------------------------------------------
 #' # Visualization of the NB distribution as dispersion varies between groups.
+#' # Small dispersion values result in higher variance (overdispersed) and
+#' # large dispersion values result in lower variance (converges to Poisson).
 #' #----------------------------------------------------------------------------
 #' disp <- expand.grid(c(1, 10, 100), c(1, 10, 100))
 #' set.seed(1234)
@@ -282,6 +284,7 @@ sim_nb <- function(
     if (!is.numeric(ratio) || any(ratio <= 0)) {
       stop("Argument 'ratio' must be a positive numeric vector.")
     }
+    # outer(ratio, mean1) is slower...
     mean2 <- as.numeric(tcrossprod(ratio, mean1))
     # For filtering step below
     # Numerical accuracy should be fine to 5 decimals...

@@ -73,7 +73,7 @@
 #'   )
 #' ```
 #'
-#' results in parametric resampling and no label permutation in performed.
+#' results in parametric resampling and no label permutation is performed.
 #' Thus, setting `equal_dispersion = FALSE` and `distribution = simulated()` is
 #' only recommended when [depower::lrt_nb()] is used inside of
 #' [depower::power()]. See also, [depower::simulated()].

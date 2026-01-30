@@ -2,7 +2,7 @@
 % Please edit documentation in R/sim_log_lognormal.r
 \name{sim_log_lognormal}
 \alias{sim_log_lognormal}
-\title{Simulate data from a normal distribution}
+\title{Simulate log-transformed lognormal data}
 \usage{
 sim_log_lognormal(
   n1,
@@ -21,59 +21,52 @@ sim_log_lognormal(
 The sample size(s) of sample 1.}
 
 \item{n2}{(integer: \code{NULL}; \verb{[2, Inf)})\cr
-The sample size(s) of sample 2. Set as \code{NULL} if you want to simulate
-for the one-sample case.}
+The sample size(s) of sample 2. Set as \code{NULL} if you want to simulate for the one-sample case.}
 
 \item{ratio}{(numeric: \verb{(0, Inf)})\cr
-The assumed population fold change(s) of sample 2 with respect to
-sample 1.
+The assumed population fold change(s) of sample 2 with respect to sample 1.
 \itemize{
-\item For one-sample data, \code{ratio} is defined as the geometric mean (GM) of the
-original lognormal population distribution.
-\item For dependent two-sample data, \code{ratio} is defined by
-GM(sample 2 / sample 1) of the original lognormal population distributions.
+\item For one-sample data, \code{ratio} is defined as the geometric mean (GM) of the original lognormal population distribution.
+\item For dependent two-sample data, \code{ratio} is defined by GM(sample 2 / sample 1) of the original lognormal population distributions.
 \itemize{
-\item e.g. \code{ratio = 2} assumes that the geometric mean of all paired
-ratios (sample 2 / sample 1) is 2.
+\item e.g. \code{ratio = 2} assumes that the geometric mean of all paired ratios (sample 2 / sample 1) is 2.
 }
-\item For independent two-sample data, the \code{ratio} is defined by
-GM(group 2) / GM(group 1) of the original lognormal population distributions.
+\item For independent two-sample data, the \code{ratio} is defined by GM(group 2) / GM(group 1) of the original lognormal population distributions.
 \itemize{
-\item e.g. \code{ratio = 2} assumes that the geometric mean of sample 2 is 2
-times larger than the geometric mean of sample 1.
+\item e.g. \code{ratio = 2} assumes that the geometric mean of sample 2 is 2 times larger than the geometric mean of sample 1.
 }
 }
 
 See 'Details' for additional information.}
 
 \item{cv1}{(numeric: \verb{(0, Inf)})\cr
-The coefficient of variation(s) of sample 1 in the original lognormal
-data.}
+The coefficient of variation(s) of sample 1 in the original lognormal data.}
 
 \item{cv2}{(numeric: \code{NULL}; \verb{(0, Inf)})\cr
-The coefficient of variation(s) of sample 2 in the original lognormal
-data. Set as \code{NULL} if you want to simulate for the one-sample case.}
+The coefficient of variation(s) of sample 2 in the original lognormal data.
+Set as \code{NULL} if you want to simulate for the one-sample case.}
 
 \item{cor}{(numeric: \code{0}; \verb{[-1, 1]})\cr
-The correlation(s) between sample 1 and sample 2 in the original
-lognormal data. Not used for the one-sample case.}
+The correlation(s) between sample 1 and sample 2 in the original lognormal data.
+Not used for the one-sample case.
+See 'Details' for constraints based on cv1 and cv2.}
 
 \item{nsims}{(Scalar integer: \code{1L}; \verb{[1,Inf)})\cr
-The number of simulated data sets. If \code{nsims > 1}, the data is
-returned in a list-column of a depower simulation data frame.}
+The number of simulated data sets.
+If \code{nsims > 1}, the data is returned in a list-column of a depower simulation data frame.}
 
 \item{return_type}{(string: \code{"list"}; \code{c("list", "data.frame")})\cr
-The data structure of the simulated data. If \code{"list"} (default), a
-list object is returned. If \code{"data.frame"} a data frame in tall format
-is returned. The list object provides computational efficiency and the
-data frame object is convenient for formulas. See 'Value'.}
+The data structure of the simulated data.
+If \code{"list"} (default), a list object is returned.
+If \code{"data.frame"} a data frame in tall format is returned.
+The list object provides computational efficiency and the data frame object is convenient for formulas.
+See 'Value'.}
 
 \item{messages}{(Scalar logical: \code{TRUE})\cr
 Whether or not to display messages for pathological simulation cases.}
 }
 \value{
-If \code{nsims = 1} and the number of unique parameter combinations is
-one, the following objects are returned:
+If \code{nsims = 1} and the number of unique parameter combinations is one, the following objects are returned:
 \itemize{
 \item If one-sample data with \code{return_type = "list"}, a list:
 \tabular{lll}{
@@ -101,9 +94,7 @@ Column \tab Name \tab Description \cr
 }
 }
 
-If \code{nsims > 1} or the number of unique parameter combinations is greater than
-one, each object described above is returned in data frame, located in a
-list-column named \code{data}.
+If \code{nsims > 1} or the number of unique parameter combinations is greater than one, each object described above is returned in data frame, located in a list-column named \code{data}.
 \itemize{
 \item If one-sample data, a data frame:
 \tabular{lll}{
@@ -132,8 +123,7 @@ or geometric mean ratio [GM(sample 2 / sample 1)]. \cr
 }
 }
 \description{
-Simulate data from the log transformed lognormal distribution (i.e. a normal
-distribution). This function handles all three cases:
+Simulate data from the log-transformed lognormal distribution (i.e. a normal distribution) for three scenarios:
 \enumerate{
 \item One-sample data
 \item Dependent two-sample data
@@ -141,79 +131,164 @@ distribution). This function handles all three cases:
 }
 }
 \details{
-Based on assumed characteristics of the original lognormal distribution, data
-is simulated from the corresponding log-transformed (normal) distribution.
-This simulated data is suitable for assessing power of a hypothesis for the
-geometric mean or ratio of geometric means from the original lognormal data.
+Based on assumed characteristics of the original lognormal distribution, data is simulated from the corresponding log-transformed (normal) distribution.
+This simulated data is suitable for assessing power of a hypothesis for the geometric mean or ratio of geometric means from the original lognormal data.
 
-This method can also be useful for other population distributions which are
-positive and where it makes sense to describe the ratio of geometric means.
-However, the lognormal distribution is theoretically correct in the sense
-that you can log transform to a normal distribution, compute the summary
-statistic, then apply the inverse transformation to summarize on the original
-lognormal scale.
+This method can also be useful for other population distributions which are positive and where it makes sense to describe the ratio of geometric means.
+However, the lognormal distribution is theoretically correct in the sense that you can log-transform to a normal distribution, compute the summary statistic, then apply the inverse transformation to summarize on the original lognormal scale.
+\subsection{Notation}{\tabular{ll}{
+   Symbol \tab Definition \cr
+   \eqn{GM(\cdot)} \tab Geometric mean \cr
+   \eqn{AM(\cdot)} \tab Arithmetic mean \cr
+   \eqn{CV(\cdot)} \tab Coefficient of variation \cr
+   \eqn{\sigma^2} \tab Variance \cr
+   \eqn{\rho} \tab Correlation \cr
+   \eqn{\ln} \tab Natural Log \cr
+   \eqn{X_i} \tab Lognormal random variable for group \eqn{i} \cr
+   \eqn{Y_i} \tab Log-transformed lognormal random variable for group \eqn{i} \cr
+}
 
-Let \eqn{GM(\cdot)} be the geometric mean and \eqn{AM(\cdot)} be the
-arithmetic mean. For independent lognormal samples \eqn{X_1} and \eqn{X_2}
+}
 
-\deqn{\text{Fold Change} = \frac{GM(X_2)}{GM(X_1)}}
+\subsection{Fold Change and the Ratio Parameter}{
 
-For dependent lognormal samples \eqn{X_1} and \eqn{X_2}
+The \code{ratio} parameter (fold change) is defined as follows for each scenario:
+\itemize{
+\item One-sample: \eqn{\text{ratio} = GM(X)}
+\item Dependent two-sample: \eqn{\text{ratio} = GM \left( \frac{X_2}{X_1} \right)}
+\item Independent two-sample: \eqn{\text{ratio} = \frac{GM(X_2)}{GM(X_1)}}
+}
 
-\deqn{\text{Fold Change} = GM\left( \frac{X_2}{X_1} \right)}
-
-Unlike ratios and the arithmetic mean, for equal sample sizes of
-\eqn{X_1} and \eqn{X_2} it follows that
-\eqn{\frac{GM(X_2)}{GM(X_1)} = GM \left( \frac{X_2}{X_1} \right) =
-e^{AM(\ln X_2) - AM(\ln X_1)} = e^{AM(\ln X_2 - \ln X_1)}}.
-
-The coefficient of variation (CV) for \eqn{X} is defined as
-
-\deqn{CV = \frac{SD(X)}{AM(X)}}
-
-The relationship between sample statistics for the original lognormal data
-(\eqn{X}) and the natural logged data (\eqn{\ln{X}}) are
+For equal sample sizes of \eqn{X_1} and \eqn{X_2}, these definitions are connected by the identity
 
 \deqn{
 \begin{aligned}
-AM(X)  &= e^{AM(\ln{X}) + \frac{Var(\ln{X})}{2}} \\
-GM(X)  &= e^{AM(\ln{X})} \\
-Var(X) &= AM(X)^2 \left( e^{Var(\ln{X})} - 1 \right) \\
-CV(X)  &= \frac{\sqrt{AM(X)^2 \left( e^{Var(\ln{X})} - 1 \right)}}{AM(X)} \\
-       &= \sqrt{e^{Var(\ln{X})} - 1}
+\frac{GM(X_2)}{GM(X_1)} &= GM\left( \frac{X_2}{X_1} \right) \\
+  &= e^{AM(Y_2) - AM(Y_1)} \\
+  &= e^{AM(Y_2 - Y_1)}.
+\end{aligned}
+}
+}
+
+\subsection{Coefficient of Variation}{
+
+The coefficient of variation (CV) for a random variable \eqn{X} is defined as
+
+\deqn{CV(X) = \frac{\sigma_{X}}{AM(X)}.}
+}
+
+\subsection{Relationships Between Original and Log Scales}{
+
+The following relationships allow conversion between scales.
+
+From log scale to original lognormal scale:
+
+\deqn{
+\begin{aligned}
+AM(X)  &= e^{AM(Y) + \sigma^2_Y / 2} \\
+GM(X)  &= e^{AM(Y)} \\
+\sigma^2_{X} &= AM(X)^2 \left( e^{\sigma^2_Y} - 1 \right) \\
+CV(X)  &= \frac{\sqrt{AM(X)^2 \left( e^{\sigma^2_Y} - 1 \right)}}{AM(X)} \\
+       &= \sqrt{e^{\sigma^2_Y} - 1}.
 \end{aligned}
 }
 
-and
+From original lognormal scale to log scale:
 
 \deqn{
 \begin{aligned}
-AM(\ln{X})  &= \ln \left( \frac{AM(X)}{\sqrt{CV(X)^2 + 1}} \right) \\
-Var(\ln{X}) &= \ln(CV(X)^2 + 1) \\
-Cor(\ln{X_1}, \ln{X_2}) &= \frac{\ln \left( Cor(X_1, X_2)CV(X_1)CV(X_2) + 1 \right)}{SD(\ln{X_1})SD(\ln{X_2})}
+AM(Y)  &= \ln \left( \frac{AM(X)}{\sqrt{CV(X)^2 + 1}} \right) \\
+\sigma^2_Y &= \ln(CV(X)^2 + 1) \\
+\rho_{Y_1, Y_2} &= \frac{\ln \left( \rho_{X_1, X_2}CV(X_1)CV(X_2) + 1 \right)}{\sqrt{\ln(CV(X_1)^2 + 1)}\sqrt{\ln(CV(X_2)^2 + 1)}} \\
+  &= \frac{\ln \left( \rho_{X_1, X_2}CV(X_1)CV(X_2) + 1 \right)}{\sigma_{Y_1}\sigma_{Y_2}}.
+\end{aligned}
+}
+}
+
+\subsection{Dependent Samples}{
+\subsection{Correlation Constraints}{
+
+Not all combinations of \code{cor}, \code{cv1}, and \code{cv2} yield a valid correlation on the log scale.
+Two constraints must be satisfied.
+
+First, the logarithm argument must be positive:
+
+\deqn{
+  \rho_{X_1, X_2} \cdot CV(X_1) \cdot CV(X_2) + 1 > 0
+}
+
+which implies
+
+\deqn{
+  \rho_{X_1, X_2} > \frac{-1}{CV(X_1) \cdot CV(X_2)}.
+}
+
+Second, the log-scale correlation must be in \eqn{(-1, 1)}:
+
+\deqn{
+  \frac{e^{-\sigma_{Y_1} \sigma_{Y_2}} - 1}{CV(X_1) \cdot CV(X_2)} < \rho_{X_1, X_2} < \frac{e^{\sigma_{Y_1} \sigma_{Y_2}} - 1}{CV(X_1) \cdot CV(X_2)}.
+}
+
+The lower bound of the second constraint is always more restrictive than the first constraint, so the second constraint is sufficient.
+
+When \eqn{CV(X_1) = CV(X_2) = CV}, the second constraint simplifies to:
+
+\deqn{
+  \frac{-1}{CV^2 + 1} < \rho_{X_1, X_2} < 1
+}
+
+For equal CVs, only negative correlations are constrained.
+For example, with \eqn{CV = 0.5}, the valid range for \code{cor} is approximately \eqn{(-0.80, 1)}.
+
+When \eqn{CV(X_1) \neq CV(X_2)}, both bounds may be constrained.
+The upper bound is strictly less than 1, meaning even positive correlations near 1 can be infeasible.
+For example, with \eqn{CV(X_1) = 0.1} and \eqn{CV(X_2) = 1}, the valid range for \code{cor} is approximately \eqn{(-0.80, 0.87)}.
+}
+
+\subsection{Equivalent One-Sample Representation}{
+
+Two-sample dependent data can be represented as an equivalent paired one-sample problem.
+First, consider the properties of variance and covariance.
+The variance of the difference between two dependent samples on the log scale (normal distribution) is:
+
+\deqn{
+\begin{aligned}
+\sigma^2_{Y_2 - Y_1} &= \sigma^2_{Y_1} + \sigma^2_{Y_2} - 2 Cov(Y_1, Y_2) \\
+  &= \sigma^2_{Y_1} + \sigma^2_{Y_2} - 2 \rho_{Y_1, Y_2} \sigma_{Y_1} \sigma_{Y_2}
 \end{aligned}
 }
 
-Based on the properties of correlation and variance,
+Positive correlation reduces the variance of differences, while negative correlation increases it.
+For the special case where the two samples are uncorrelated and have equal variance: \eqn{\sigma^2_{Y_2 - Y_1} = 2\sigma^2}.
+
+Second, substitute \eqn{\rho} and \eqn{\sigma^2} with their alternative forms:
 
 \deqn{
 \begin{aligned}
-Var(X_2 - X_1) &= Var(X_1) + Var(X_2) - 2Cov(X_1, X_2) \\
-           &= Var(X_1) + Var(X_2) - 2Cor(X_1, X_2)SD(X_1)SD(X_2) \\
-SD(X_2 - X_1)  &= \sqrt{Var(X_2 - X_1)}
+  \sigma^2_{Y_2 - Y_1} &= \sigma^2_{Y_1} + \sigma^2_{Y_2} - 2 \rho_{Y_1, Y_2} \sigma_{Y_1} \sigma_{Y_2} \\
+    &= \ln(CV(X_1)^2 + 1) + \ln(CV(X_2)^2 + 1) - 2\ln(\rho_{X_1, X_2}CV(X_1)CV(X_2) + 1) \\
+    &= \ln\left(\frac{(CV(X_1)^2 + 1)(CV(X_2)^2 + 1)}{(\rho_{X_1, X_2}CV(X_1)CV(X_2) + 1)^2}\right).
 \end{aligned}
 }
 
-The standard deviation of the differences gets smaller the more positive
-the correlation and conversely gets larger the more negative the correlation.
-For the special case where the two samples are uncorrelated and each has the
-same variance, it follows that
+Finally, denote log-transformed one-sample paired difference as \eqn{Y_{\text{diff}}}.
+It follows that \eqn{\sigma^2_{Y_{\text{diff}}} = \ln(CV(X_{\text{diff}})^2 + 1)}.
+We need to solve for \eqn{CV(X_{\text{diff}})} so that the variance of the log-transformed one-sample values match the variance of the log-transformed two-sample differences.
+This results in
 
 \deqn{
-\begin{aligned}
-Var(X_2 - X_1) &= \sigma^2 + \sigma^2 \\
-SD(X_2 - X_1) &= \sqrt{2}\sigma
-\end{aligned}
+  CV(X_{\text{diff}}) = \sqrt{\frac{(CV(X_1)^2 + 1)(CV(X_2)^2 + 1)}{(\rho_{X_1, X_2}CV(X_1)CV(X_2) + 1)^2} - 1}
+}
+
+When \eqn{CV(X_1) = CV(X_2) = CV}, this simplifies to
+
+\deqn{
+  CV(X_{\text{diff}}) = \sqrt{\left( \frac{CV^2 + 1}{\rho_{X_1, X_2} CV^2 + 1} \right)^2 - 1}
+}
+
+This equivalence allows dependent two-sample data to be simulated (with lognormal scale arguments \code{cv1}, \code{cv2}, and \code{cor}) using a one-sample simulation (with lognormal scale argument \code{cv1}).
+}
+
 }
 }
 \examples{
@@ -323,6 +398,177 @@ sim_log_lognormal(
   nsims = 2,
   return_type = "list"
 )
+
+#----------------------------------------------------------------------------
+# Visualization of independent two-sample data from a log-transformed
+# lognormal distribution with varying coefficient of variation.
+#----------------------------------------------------------------------------
+cv <- expand.grid(c(0.1, 0.5, 1), c(0.1, 0.5, 1))
+set.seed(1234)
+data <- mapply(
+  FUN = function(cv1, cv2) {
+    d <- sim_log_lognormal(
+      n1 = 10000,
+      n2 = 10000,
+      ratio = 1.5,
+      cv1 = cv1,
+      cv2 = cv2,
+      cor = 0,
+      nsims = 1,
+      return_type = "data.frame"
+    )
+    cbind(cv1 = cv1, cv2 = cv2, d)
+  },
+  cv1 = cv[[1]],
+  cv2 = cv[[2]],
+  SIMPLIFY = FALSE
+)
+
+data <- do.call(what = "rbind", args = data)
+
+ggplot2::ggplot(
+  data = data,
+  mapping = ggplot2::aes(x = value, fill = condition)
+) +
+  ggplot2::facet_grid(
+    rows = ggplot2::vars(.data$cv2),
+    cols = ggplot2::vars(.data$cv1),
+    labeller = ggplot2::labeller(
+      .rows = ggplot2::label_both,
+      .cols = ggplot2::label_both
+    )
+  ) +
+  ggplot2::geom_density(alpha = 0.3) +
+  ggplot2::coord_cartesian(xlim = c(-3, 3)) +
+  ggplot2::labs(
+    x = "Value",
+    y = "Density",
+    fill = "Condition",
+    caption = "cor=0 and ratio=1.5"
+  )
+
+#----------------------------------------------------------------------------
+# Visualization of dependent two-sample data from a log-transformed lognormal
+# distribution with varying correlation.
+# The first figure shows the marginal distribution for each group.
+# The second figure shows the joint distribution for each group.
+# The third figure shows the distribution of differences.
+#----------------------------------------------------------------------------
+set.seed(1234)
+data <- lapply(
+  X = c(-0.7, -0.4, 0, 0.4, 0.7),
+  FUN = function(x) {
+    d <- sim_log_lognormal(
+      n1 = 1000,
+      n2 = 1000,
+      cv1 = 0.5,
+      cv2 = 0.5,
+      ratio = 1.5,
+      cor = x,
+      nsims = 1,
+      return_type = "data.frame"
+    )
+    cor <- cor(
+      x = d[d$condition == 1, ]$value,
+      y = d[d$condition == 2, ]$value
+    )
+    cbind(cor = x, r = cor, d)
+  }
+)
+
+data <- do.call(what = "rbind", args = data)
+
+# Density plot of marginal distributions
+ggplot2::ggplot(
+  data = data,
+  mapping = ggplot2::aes(x = value, fill = condition)
+) +
+  ggplot2::facet_wrap(
+    facets = ggplot2::vars(.data$cor),
+    ncol = 2,
+    labeller = ggplot2::labeller(.rows = ggplot2::label_both)
+  ) +
+  ggplot2::geom_density(alpha = 0.3) +
+  ggplot2::coord_cartesian(xlim = c(-3, 3)) +
+  ggplot2::geom_text(
+    mapping = ggplot2::aes(
+      x = -2,
+      y = 0.8,
+      label = paste0("r = ", round(r, 2))
+    ),
+    check_overlap = TRUE
+  ) +
+  ggplot2::labs(
+    x = "Value",
+    y = "Density",
+    fill = "Condition",
+    caption = "cv1=0.5, cv2=0.5, ratio=1.5\nr=log-scale Pearson correlation"
+  )
+
+# Reshape to wide format for scatterplot
+data_wide <- data.frame(
+  cor = data[data$condition == "1", ]$cor,
+  r = data[data$condition == "1", ]$r,
+  value1 = data[data$condition == "1", ]$value,
+  value2 = data[data$condition == "2", ]$value
+)
+
+# Scatterplot of joint distribution
+ggplot2::ggplot(
+  data = data_wide,
+  mapping = ggplot2::aes(x = value1, y = value2)
+) +
+  ggplot2::facet_wrap(
+    facets = ggplot2::vars(.data$cor),
+    ncol = 2,
+    labeller = ggplot2::labeller(.rows = ggplot2::label_both)
+  ) +
+  ggplot2::geom_point(alpha = 0.3) +
+  ggplot2::geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "forestgreen"
+  ) +
+  ggplot2::geom_text(
+    data = unique(data_wide[c("cor", "r")]),
+    mapping = ggplot2::aes(
+      x = -2.5,
+      y = 2.5,
+      label = paste0("r = ", round(r, 2))
+    ),
+    hjust = 0
+  ) +
+  ggplot2::coord_cartesian(xlim = c(-3, 3), ylim = c(-3, 3)) +
+  ggplot2::labs(
+    x = "Condition 1",
+    y = "Condition 2",
+    caption = paste0(
+      "cv1=0.5, cv2=0.5, ratio=1.5",
+      "\nr=log-scale Pearson correlation",
+      "\nSolid green line: linear regression"
+    )
+  )
+
+# Density plot of differences
+# Paired differences have decreasing variance as correlation increases.
+data_wide$difference <- data_wide$value2 - data_wide$value1
+
+ggplot2::ggplot(
+  data = data_wide,
+  mapping = ggplot2::aes(x = difference)
+) +
+  ggplot2::facet_wrap(
+    facets = ggplot2::vars(.data$cor),
+    ncol = 2,
+    labeller = ggplot2::labeller(.rows = ggplot2::label_both)
+  ) +
+  ggplot2::geom_density(alpha = 0.3, fill = "#F8766D") +
+  ggplot2::coord_cartesian(xlim = c(-3, 3)) +
+  ggplot2::labs(
+    x = "Difference (Condition 2 - Condition 1)",
+    y = "Density",
+    caption = "cv1=0.5, cv2=0.5, ratio=1.5"
+  )
 
 }
 \references{

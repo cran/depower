@@ -99,6 +99,9 @@ sim_log_lognormal(
 library(depower)
 
 # Power for independent two-sample t-test
+# Includes shaded region for Bayesian poster predictive interval which
+# summarizes the plausible range of power estimates for a future simulation
+# study based on 500 data simulations.
 set.seed(1234)
 sim_log_lognormal(
   n1 = c(10, 15),
@@ -109,6 +112,7 @@ sim_log_lognormal(
   nsims = 500
 ) |>
   power(alpha = 0.05) |>
+  add_power_pi() |>
   plot()
 
 # Power for dependent two-sample t-test

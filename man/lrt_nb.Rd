@@ -142,7 +142,7 @@ unequal dispersions. However, used inside \code{\link[=power]{power()}}, e.g.
   )
 }\if{html}{\out{</div>}}
 
-results in parametric resampling and no label permutation in performed.
+results in parametric resampling and no label permutation is performed.
 Thus, setting \code{equal_dispersion = FALSE} and \code{distribution = simulated()} is
 only recommended when \code{\link[=lrt_nb]{lrt_nb()}} is used inside of
 \code{\link[=power]{power()}}. See also, \code{\link[=simulated]{simulated()}}.

@@ -1,4 +1,4 @@
-#' Simulate data from a BNB distribution
+#' Simulate BNB data
 #'
 #' Simulate data from the bivariate negative binomial (BNB) distribution. The
 #' BNB distribution is used to simulate count data where the event counts are
@@ -228,6 +228,8 @@
 #'
 #' #----------------------------------------------------------------------------
 #' # Visualization of the BNB distribution as dispersion varies.
+#' # The first figure shows the marginal distribution for each group.
+#' # The second figure shows the joint distribution for each group.
 #' #----------------------------------------------------------------------------
 #' set.seed(1234)
 #' data <- lapply(
@@ -251,6 +253,7 @@
 #'
 #' data <- do.call(what = "rbind", args = data)
 #'
+#' # Density plot of marginal distributions
 #' ggplot2::ggplot(
 #'   data = data,
 #'   mapping = ggplot2::aes(x = value, fill = condition)
@@ -266,7 +269,7 @@
 #'     mapping = ggplot2::aes(
 #'       x = 30,
 #'       y = 0.12,
-#'       label = paste0("Correlation: ", round(correlation, 2))
+#'       label = paste0("r = ", round(correlation, 2))
 #'     ),
 #'     check_overlap = TRUE
 #'   ) +
@@ -274,7 +277,51 @@
 #'     x = "Value",
 #'     y = "Density",
 #'     fill = "Condition",
-#'     caption = "Mean1=10, Mean2=15, ratio=1.5"
+#'     caption = "Mean1=10, Mean2=15, Ratio=1.5\nr=Pearson correlation"
+#'   )
+#'
+#' # Reshape to wide format for scatterplot
+#' data_wide <- data.frame(
+#'   dispersion = data[data$condition == "1", ]$dispersion,
+#'   correlation = data[data$condition == "1", ]$correlation,
+#'   value1 = data[data$condition == "1", ]$value,
+#'   value2 = data[data$condition == "2", ]$value
+#' )
+#'
+#' # Scatterplot of joint distribution
+#' ggplot2::ggplot(
+#'   data = data_wide,
+#'   mapping = ggplot2::aes(x = value1, y = value2)
+#' ) +
+#'   ggplot2::facet_wrap(
+#'     facets = ggplot2::vars(.data$dispersion),
+#'     ncol = 2,
+#'     labeller = ggplot2::labeller(.rows = ggplot2::label_both)
+#'   ) +
+#'   ggplot2::geom_point(alpha = 0.3) +
+#'   ggplot2::geom_smooth(
+#'     method = "lm",
+#'     se = FALSE,
+#'     color = "forestgreen"
+#'   ) +
+#'   ggplot2::geom_text(
+#'     data = unique(data_wide[c("dispersion", "correlation")]),
+#'     mapping = ggplot2::aes(
+#'       x = 5,
+#'       y = 55,
+#'       label = paste0("r = ", round(correlation, 2))
+#'     ),
+#'     hjust = 0
+#'   ) +
+#'   ggplot2::coord_cartesian(xlim = c(0, 60), ylim = c(0, 60)) +
+#'   ggplot2::labs(
+#'     x = "Condition 1",
+#'     y = "Condition 2",
+#'     caption = paste0(
+#'       "Mean1=10, Mean2=15, Ratio=1.5",
+#'       "\nr=Pearson correlation",
+#'       "\nSolid green line: linear regression"
+#'     )
 #'   )
 #'
 #' @importFrom stats rgamma rpois

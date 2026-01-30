@@ -127,6 +127,7 @@
 #' power simulation framework.
 #'
 #' ## Column `nsims`
+#'
 #' The final number of valid simulations per unique set of simulation parameters
 #' may be less than the original number requested. This may occur when the test
 #' results in a missing p-value. For `wald_test_bnb()`, pathological MLE
@@ -136,8 +137,14 @@
 #' `sim_nb()` and `sim_bnb()` may also reduce `nsims` during the data simulation
 #' phase.
 #'
-#' The `nsims` column in the return data frame is the effective number of
-#' simulations for power results.
+#' `nsims` denotes the effective number of simulated datasets under the alternative hypothesis, resulting in the equivalent number of hypothesis tests performed used to calculate power.
+#' If `nsims` is too small, the power estimate will have high uncertainty (wide confidence/prediction intervals).
+#' If `nsims` is too large, computation time may be prohibitive.
+#' To aid in choosing an appropriate `nsims`, functions [eval_power_ci()] and [eval_power_pi()] are helpful to understand the precision of the interval for power, before simulation takes place.
+#' Their counterparts, [add_power_ci()] and [add_power_pi()] add intervals for power to the object returned by [power()].
+#' Functions [eval_power_ci()] and [add_power_ci()] quantify uncertainty in the true power parameter, and answer the question, "What is the plausible range of true power values given my simulation results?"
+#' Functions [eval_power_pi()] and [add_power_pi()] quantify the expected range of power estimates from a future simulation study, and answer the question, "If I run a new simulation study with \eqn{m} simulations, what range of power estimates might I observe?" which is particularly useful for deciding the optimal `nsims`.
+#' When the prediction intervals from [eval_power_pi()] are too wide, consider choosing a larger `nsims` before running a power simulation.
 #'
 #' @references
 #' \insertRef{yu_2017}{depower}
@@ -153,8 +160,8 @@
 #' \insertRef{vickerstaff_2019}{depower}
 #'
 #' @param data (depower)\cr
-#'        The simulated data returned by [depower::sim_log_lognormal()],
-#'        [depower::sim_nb()], or [depower::sim_bnb()].
+#'        The simulated data returned by [depower::sim_log_lognormal()], [depower::sim_nb()], or [depower::sim_bnb()].
+#'        In each, argument `return_type` must be the default `"list"`.
 #' @param ... (functions)\cr
 #'        The function(s) used to perform the test. If empty, a default test
 #'        function will be selected based on `class(data)`. Names are used for
@@ -174,19 +181,24 @@
 #'        is large.
 #'
 #' @return A data frame with the following columns appended to the `data` object:
-#' \tabular{lll}{
-#'   Column \tab Name \tab Description \cr
-#'   \tab `alpha`  \tab Type I assertion probability. \cr
-#'   \tab `test`   \tab Name-value pair of the function and statistical test: `c(as.character(...) = names(...)`. \cr
-#'   \tab `data`   \tab List-column of simulated data. \cr
-#'   \tab `result` \tab List-column of test results. \cr
-#'   \tab `power`  \tab Power of the test for corresponding parameters.
+#' \tabular{ll}{
+#'   Name \tab Description \cr
+#'   `alpha`  \tab Type I assertion probability. \cr
+#'   `test`   \tab Name-value pair of the function and statistical test: `c(as.character(...) = names(...)`. \cr
+#'   `data`   \tab List-column of simulated data. \cr
+#'   `result` \tab List-column of test results. \cr
+#'   `power`  \tab Power of the test for corresponding parameters.
 #' }
 #'
 #' For `power(list_column = FALSE)`, columns `data`, and `result` are excluded from
 #' the data frame.
 #'
-#' @seealso [depower::plot.depower()]
+#' @seealso
+#' [depower::plot.depower()],
+#' [depower::add_power_ci()],
+#' [depower::add_power_pi()],
+#' [depower::eval_power_ci()],
+#' [depower::eval_power_pi()]
 #'
 #' @examples
 #' #----------------------------------------------------------------------------
@@ -215,6 +227,10 @@
 #'   "Welch's t-Test" = t_test_welch(alternative = "greater"),
 #'   alpha = 0.01
 #' )
+#'
+#' # The 95% posterior predictive interval for power based on 1000 simulations
+#' power(data) |>
+#'   add_power_pi()
 #'
 #' # Power for dependent two-sample t-test
 #' set.seed(1234)
@@ -907,7 +923,7 @@ any_zeros <- function(x, max_zeros) {
 # Whether or not the res[["result"]] object contains missing p-values.
 any_missing_p <- function(x) {
   # Walk the list of data and return whether or not each dataset contains
-  # majority nonzeros
+  # missing p-values
   lapply(
     X = x,
     FUN = function(x) {

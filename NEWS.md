@@ -1,3 +1,18 @@
+# depower 2026.1.30
+
+### New Features
+
+- Add functions `add_power_ci()` and `add_power_pi()` for confidence intervals and prediction intervals of the power estimate, respectively.
+  - They add uncertainty intervals for power to the object return by `power()`.
+  - Function `plot.depower()` will add shaded regions for the intervals.
+- Add functions `eval_power_ci()` and `eval_power_pi()` for confidence intervals and prediction intervals of the power estimate, respectively.
+  - In contrast to the `add_power_*()` variants, these are for planning power simulation studies.
+  - Assess uncertainty in hypothetical simulation-based power estimates before committing computational time to a simulation run.
+
+### Other Updates
+
+- General improvements in documentation.
+
 # depower 2025.10.21
 
 ### New Features
