@@ -1,3 +1,25 @@
+# depower 2026.11.11
+
+### Bug Fixes
+
+- Remove trailing slash on void elements to pass CRAN vnu HTML check.
+- Fix the asymptotic variance of the ratio in `wald_test_bnb()`.
+  The function used Eq. (10) of Rettiganti and Nagaraja (2012), which omits a factor of the mean from one term of the denominator.
+  The function now uses the inverse of the Fisher information matrix in the appendix of that paper, which gives `ratio * (1 + ratio) / (n * mean1)`.
+  - The test statistic, p-value, and confidence interval change.
+    The size of the change depends on the mean and the dispersion parameter, and it grows with the dispersion parameter.
+  - The results of `power()` also change, because `wald_test_bnb()` is its default test for BNB data.
+  - The variance can no longer be negative, which removes that cause of missing p-values.
+  - The default test now has type I error near the nominal level for small samples.
+    For example, the asymptotic test at `n = 4`, `mean1 = 9.75`, and `dispersion = 2` has type I error 0.05, compared with 0.07 before this fix.
+- Count near-equal test statistics as ties in randomization and simulated p-values.
+  Numerical optimization puts small errors in the test statistics, and exact randomization p-values could change by one count because of these errors.
+  The comparison now uses a relative tolerance of `1e-3`, which can only increase the p-value.
+
+### Other Updates
+
+- General improvements in documentation.
+
 # depower 2026.1.30
 
 ### New Features

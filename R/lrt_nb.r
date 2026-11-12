@@ -246,17 +246,17 @@ lrt_nb <- function(
   #-----------------------------------------------------------------------------
   # Prepare result
   #-----------------------------------------------------------------------------
-  mean1_alt = mle_alt[["mean1"]]
-  mean2_alt = mle_alt[["mean2"]]
-  ratio_alt = mle_alt[["ratio"]]
+  mean1_alt <- mle_alt[["mean1"]]
+  mean2_alt <- mle_alt[["mean2"]]
+  ratio_alt <- mle_alt[["ratio"]]
 
-  mean1_null = mle_null[["mean1"]]
-  mean2_null = mle_null[["mean2"]]
+  mean1_null <- mle_null[["mean1"]]
+  mean2_null <- mle_null[["mean2"]]
 
-  dispersion1_alt = mle_alt[["dispersion1"]]
-  dispersion2_alt = mle_alt[["dispersion2"]]
-  dispersion1_null = mle_null[["dispersion1"]]
-  dispersion2_null = mle_null[["dispersion2"]]
+  dispersion1_alt <- mle_alt[["dispersion1"]]
+  dispersion2_alt <- mle_alt[["dispersion2"]]
+  dispersion1_null <- mle_null[["dispersion1"]]
+  dispersion2_null <- mle_null[["dispersion2"]]
 
   n1 <- mle_alt[["n1"]]
   n2 <- mle_alt[["n2"]]

@@ -6,6 +6,31 @@ year <- strtrim(vers, 4)
 note <- paste0("R package version ", vers)
 
 bibentry(
+  bibtype = "Article",
+  author = c(
+    person(given = c("Brett", "G."), family = "Klamer"),
+    person(given = "Lianbo", family = "Yu")
+  ),
+  title = paste0(
+    "depower: An R Package for Simulation-Based Power Analysis of ",
+    "Differential Expression Studies"
+  ),
+  journal = "Cancer Informatics",
+  year = "2026",
+  volume = "25",
+  doi = "10.1177/11769351261431247",
+  key = "klamer_2026",
+  header = "To cite the depower methods and software in publications, please use:",
+  textVersion = paste0(
+    "Klamer, B. G., & Yu, L. ",
+    "depower: An R Package for Simulation-Based Power Analysis of ",
+    "Differential Expression Studies. ",
+    "Cancer Informatics. 2026;25. ",
+    "https://doi.org/10.1177/11769351261431247"
+  )
+)
+
+bibentry(
   bibtype = "Manual",
   author = c(
     person(given = c("Brett", "G."), family = "Klamer"),
@@ -17,7 +42,7 @@ bibentry(
   url = "https://cran.r-project.org/package=depower",
   key = "depower",
   doi = "10.32614/CRAN.package.depower",
-  header = "To cite depower in publications, please use:",
+  header = "To cite a specific version of the depower package, please use:",
   textVersion = paste0(
     "Klamer, B. G., & Yu, L. (", year, "). ",
     "depower: Power Analysis for Differential Expression Studies. ",

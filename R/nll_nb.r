@@ -21,8 +21,8 @@
 #'
 #' \deqn{
 #' \begin{aligned}
-#' L(r, \mu, \theta_1, \theta_2 \mid X_1, X_2) = & \left( \frac{\theta_1^{\theta_1}}{\Gamma(\theta_1)} \right)^{n_1} \frac{\mu^{\sum{x_{1i}}}}{(\mu + \theta_1)^{\sum{x_{1i} + n_1 \theta_1}}} \times \\
-#'   & \left( \frac{\theta_2^{\theta_2}}{\Gamma(\theta_2)} \right)^{n_2} \frac{(r \mu)^{\sum{x_{2j}}}}{(r \mu + \theta_2)^{\sum{x_{2j} + n_2 \theta_2}}} \times \\
+#' L(r, \mu, \theta_1, \theta_2 \mid X_1, X_2) = & \left( \frac{\theta_1^{\theta_1}}{\Gamma(\theta_1)} \right)^{n_1} \frac{\mu^{\sum{x_{1i}}}}{(\mu + \theta_1)^{\sum x_{1i} + n_1 \theta_1}} \times \\
+#'   & \left( \frac{\theta_2^{\theta_2}}{\Gamma(\theta_2)} \right)^{n_2} \frac{(r \mu)^{\sum{x_{2j}}}}{(r \mu + \theta_2)^{\sum x_{2j} + n_2 \theta_2}} \times \\
 #'   & \prod_{i = 1}^{n_1}{\frac{\Gamma(x_{1i} + \theta_1)}{x_{1i}!}} \prod_{j = 1}^{n_2}{\frac{\Gamma(x_{2j} + \theta_2)}{x_{2j}!}}
 #' \end{aligned}
 #' }
@@ -49,7 +49,7 @@
 #' \deqn{
 #' \begin{aligned}
 #' L(r, \mu, \theta \mid X_1, X_2) = & \left( \frac{\theta^{\theta}}{\Gamma(\theta)} \right)^{n_1 + n_2} \times \\
-#'   & \frac{\mu^{\sum{x_{1i}}}}{(\mu + \theta)^{\sum{x_{1i} + n_1 \theta}}} \frac{(r \mu)^{\sum{x_{2j}}}}{(r \mu + \theta)^{\sum{x_{2j} + n_2 \theta}}} \times \\
+#'   & \frac{\mu^{\sum{x_{1i}}}}{(\mu + \theta)^{\sum x_{1i} + n_1 \theta}} \frac{(r \mu)^{\sum{x_{2j}}}}{(r \mu + \theta)^{\sum x_{2j} + n_2 \theta}} \times \\
 #'   & \prod_{i = 1}^{n_1}{\frac{\Gamma(x_{1i} + \theta)}{x_{1i}!}} \prod_{j = 1}^{n_2}{\frac{\Gamma(x_{2j} + \theta)}{x_{2j}!}}
 #' \end{aligned}
 #' }

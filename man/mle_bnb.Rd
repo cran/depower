@@ -81,10 +81,11 @@ Then \eqn{X_1, X_2 \sim \text{BNB}(\mu, r, \theta)} is the joint distribution wh
 \eqn{X_1} and \eqn{X_2} are dependent (though conditionally independent),
 \eqn{X_1} is the count outcome for sample 1 of the items (subjects),
 \eqn{X_2} is the count outcome for sample 2 of the items (subjects),
-\eqn{\mu} is the conditional mean of sample 1, \eqn{r} is the ratio of the
-conditional means of sample 2 with respect to sample 1, and \eqn{\theta} is
-the gamma distribution shape parameter which controls the dispersion and the
-correlation between sample 1 and 2.
+\eqn{\mu} is the mean of sample 1
+(\eqn{E(X_1) = E(\mu G) = \mu}, because \eqn{E(G) = \theta \theta^{-1} = 1}),
+\eqn{r} is the ratio of the means of sample 2 with respect to sample 1, and
+\eqn{\theta} is the gamma distribution shape parameter which controls the
+dispersion and the correlation between sample 1 and 2.
 
 The MLEs of \eqn{r} and \eqn{\mu} are \eqn{\hat{r} = \frac{\bar{x}_2}{\bar{x}_1}}
 and \eqn{\hat{\mu} = \bar{x}_1}. The MLE of \eqn{\theta} is found by

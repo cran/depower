@@ -179,12 +179,8 @@ power simulation framework.
 
 The final number of valid simulations per unique set of simulation parameters
 may be less than the original number requested. This may occur when the test
-results in a missing p-value. For \code{wald_test_bnb()}, pathological MLE
-estimates, generally from small sample sizes and very small dispersions, may
-result in a negative estimated standard deviation of the ratio. Thus the test
-statistic and p-value would not be calculated. Note that simulated data from
-\code{sim_nb()} and \code{sim_bnb()} may also reduce \code{nsims} during the data simulation
-phase.
+results in a missing p-value. Note that simulated data from \code{sim_nb()} and
+\code{sim_bnb()} may also reduce \code{nsims} during the data simulation phase.
 
 \code{nsims} denotes the effective number of simulated datasets under the alternative hypothesis, resulting in the equivalent number of hypothesis tests performed used to calculate power.
 If \code{nsims} is too small, the power estimate will have high uncertainty (wide confidence/prediction intervals).
@@ -289,6 +285,8 @@ sim_bnb(
 
 }
 \references{
+\insertRef{klamer_2026}{depower}
+
 \insertRef{yu_2017}{depower}
 
 \insertRef{yu_2020}{depower}

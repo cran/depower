@@ -293,10 +293,14 @@ pchisq2 <- function(
   p <- if (is.null(q_null)) {
     pchisq(q = q, df = df, lower.tail = lower.tail)
   } else {
+    # Numerical optimization puts small errors in the test statistics, and these
+    # errors can separate tied values. A value of q_null within the relative
+    # tolerance counts as a tie. The tolerance can only increase the p-value.
+    tolerance <- 1e-3 * abs(q)
     if (lower.tail) {
-      (sum(q_null <= q) + 1L) / (length(q_null) + 1L)
+      (sum(q_null <= q + tolerance) + 1L) / (length(q_null) + 1L)
     } else {
-      (sum(q_null >= q) + 1L) / (length(q_null) + 1L)
+      (sum(q_null >= q - tolerance) + 1L) / (length(q_null) + 1L)
     }
   }
 

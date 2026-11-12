@@ -71,10 +71,11 @@ effect. Then \eqn{X_1, X_2 \sim \text{BNB}(\mu, r, \theta)} is the joint
 distribution where \eqn{X_1} and \eqn{X_2} are dependent (though conditionally
 independent), \eqn{X_1} is the count outcome for sample 1 of the items
 (subjects), \eqn{X_2} is the count outcome for sample 2 of the items (subjects),
-\eqn{\mu} is the conditional mean of sample 1, \eqn{r} is the ratio of the
-conditional means of sample 2 with respect to sample 1, and \eqn{\theta} is
-the gamma distribution shape parameter which controls the dispersion and the
-correlation between sample 1 and 2.
+\eqn{\mu} is the mean of sample 1
+(\eqn{E(X_1) = E(\mu G) = \mu}, because \eqn{E(G) = \theta \theta^{-1} = 1}),
+\eqn{r} is the ratio of the means of sample 2 with respect to sample 1, and
+\eqn{\theta} is the gamma distribution shape parameter which controls the
+dispersion and the correlation between sample 1 and 2.
 
 The hypotheses for the LRT of \eqn{r} are
 
@@ -102,12 +103,14 @@ The LRT statistic is
 
 Under \eqn{H_{null}}, the LRT test statistic is asymptotically distributed
 as \eqn{\chi^2_1}. The approximate level \eqn{\alpha} test rejects
-\eqn{H_{null}} if \eqn{\lambda \geq \chi^2_1(1 - \alpha)}. However,
-the asymptotic critical value is known to underestimate the exact critical
-value and the nominal significance level may not be achieved for small sample
-sizes. Argument \code{distribution} allows control of the distribution of
-the \eqn{\chi^2_1} test statistic under the null hypothesis by use of
-functions \code{\link[=asymptotic]{asymptotic()}} and \code{\link[=simulated]{simulated()}}.
+\eqn{H_{null}} if \eqn{\lambda \geq \chi^2_1(1 - \alpha)}.
+For this paired design, the asymptotic critical value is close to the exact
+critical value, with a small underestimation at very small sample sizes.
+\insertCite{rettiganti_2012;textual}{depower} recommended the asymptotic
+critical value for this design when an unbiased test is needed.
+Argument \code{distribution} allows control of the distribution of the
+\eqn{\chi^2_1} test statistic under the null hypothesis by use of functions
+\code{\link[=asymptotic]{asymptotic()}} and \code{\link[=simulated]{simulated()}}.
 }
 \examples{
 #----------------------------------------------------------------------------

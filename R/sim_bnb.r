@@ -67,7 +67,7 @@
 #' ```
 #'
 #' \if{html}{\out{<div style="display: flex; justify-content: center; padding-top: 10px; padding-bottom: 10px;">
-#'   <img style="max-width: 400px; width: 100\%; height: auto;" src="figures/gamma_poisson_mixture-1.png" alt="Gamma-Poisson Mixture CDF" />
+#'   <img style="max-width: 400px; width: 100\%; height: auto;" src="figures/gamma_poisson_mixture-1.png" alt="Gamma-Poisson Mixture CDF">
 #' </div>
 #' <br>}}
 #' \if{latex}{

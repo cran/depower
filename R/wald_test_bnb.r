@@ -12,10 +12,11 @@
 #' distribution where \eqn{X_1} and \eqn{X_2} are dependent (though conditionally
 #' independent), \eqn{X_1} is the count outcome for sample 1 of the items
 #' (subjects), \eqn{X_2} is the count outcome for sample 2 of the items (subjects),
-#' \eqn{\mu} is the conditional mean of sample 1, \eqn{r} is the ratio of the
-#' conditional means of sample 2 with respect to sample 1, and \eqn{\theta} is
-#' the gamma distribution shape parameter which controls the dispersion and the
-#' correlation between sample 1 and 2.
+#' \eqn{\mu} is the mean of sample 1
+#' (\eqn{E(X_1) = E(\mu G) = \mu}, because \eqn{E(G) = \theta \theta^{-1} = 1}),
+#' \eqn{r} is the ratio of the means of sample 2 with respect to sample 1, and
+#' \eqn{\theta} is the gamma distribution shape parameter which controls the
+#' dispersion and the correlation between sample 1 and 2.
 #'
 #' The hypotheses for the Wald test of \eqn{r} are
 #'
@@ -31,13 +32,13 @@
 #' means for sample 2 with respect to sample 1, and \eqn{r_{null}} is a constant
 #' for the assumed null population ratio of means (typically \eqn{r_{null} = 1}).
 #'
-#' \insertCite{rettiganti_2012;textual}{depower} found that \eqn{f(r) = r^2},
-#' \eqn{f(r) = r}, and \eqn{f(r) = r^{0.5}} had greatest power when \eqn{r < 1}.
-#' However, when \eqn{r > 1}, \eqn{f(r) = \ln r}, the likelihood ratio test, and
-#' \eqn{f(r) = r^{0.5}} had greatest power. \eqn{f(r) = r^2} was biased when
-#' \eqn{r > 1}. Both \eqn{f(r) = \ln r} and \eqn{f(r) = r^{0.5}} produced
-#' acceptable results for any \eqn{r} value. These results depend on the use of
-#' asymptotic vs. exact critical values.
+#' \insertCite{rettiganti_2012;textual}{depower} found that \eqn{f(r) = r^2}, \eqn{f(r) = r}, and \eqn{f(r) = r^{0.5}} had greater power than \eqn{f(r) = \ln r} and the likelihood ratio test when \eqn{r < 1}.
+#' When \eqn{r > 1}, \eqn{f(r) = \ln r} and the likelihood ratio test had the greatest power.
+#' \eqn{f(r) = r^{0.5}} had less power than these two tests when \eqn{r > 1}.
+#' \eqn{f(r) = r^2} and \eqn{f(r) = r} were biased when \eqn{r > 1}.
+#' \eqn{f(r) = \ln r} and the likelihood ratio test were unbiased.
+#' \eqn{f(r) = r^{0.5}} was approximately unbiased.
+#' These results depend on the use of asymptotic vs. exact critical values.
 #'
 #' The Wald test statistic is
 #'
@@ -48,19 +49,31 @@
 #' where
 #'
 #' \deqn{
-#' \hat{\sigma}^{2}_{\hat{r}} = \frac{\hat{r} (1 + \hat{r}) (\hat{\mu} + \hat{r}\hat{\mu} + \hat{\theta})}{n \left[ \hat{\mu} (1 + \hat{r}) (\hat{\mu} + \hat{\theta}) - \hat{\theta}\hat{r} \right]}
+#' \hat{\sigma}^{2}_{\hat{r}} = \frac{\hat{r} (1 + \hat{r})}{n \hat{\mu}}
 #' }
+#'
+#' This variance is the element for \eqn{r} in the inverse of the Fisher
+#' information matrix in Appendix A.2 of
+#' \insertCite{rettiganti_2012;textual}{depower}.
+#' It differs from Eq. (10) of that paper, where the factor \eqn{\hat{\mu}} is
+#' missing from the term \eqn{\hat{\theta}\hat{r}} of the denominator.
+#' The variance does not depend on \eqn{\hat{\theta}}.
 #'
 #' Under \eqn{H_{null}}, the Wald test statistic is asymptotically distributed
 #' as \eqn{\chi^2_1}. The approximate level \eqn{\alpha} test rejects
 #' \eqn{H_{null}} if \eqn{W(f(\hat{r})) \geq \chi^2_1(1 - \alpha)}. However,
-#' the asymptotic critical value is known to underestimate the exact critical
-#' value and the nominal significance level may not be achieved for small sample
-#' sizes. The level of significance inflation also depends on \eqn{f(\cdot)} and
-#' is most severe for \eqn{f(r) = r^2} where only the exact critical value
-#' should be used. Argument `distribution` allows control of the distribution of
-#' the \eqn{\chi^2_1} test statistic under the null hypothesis by use of
-#' functions [depower::asymptotic()] and [depower::simulated()].
+#' the asymptotic critical value can differ from the exact critical value and
+#' the nominal significance level may not be achieved for small sample sizes.
+#' The difference depends on \eqn{f(\cdot)}.
+#' The asymptotic critical value is close to the exact critical value for
+#' \eqn{f(r) = \ln r} and \eqn{f(r) = r^{0.5}}.
+#' It underestimates the exact critical value for \eqn{f(r) = r} and
+#' \eqn{f(r) = r^2}.
+#' The underestimation is most severe for \eqn{f(r) = r^2}, where only the
+#' exact critical value should be used.
+#' Argument `distribution` allows control of the distribution of the
+#' \eqn{\chi^2_1} test statistic under the null hypothesis by use of functions
+#' [depower::asymptotic()] and [depower::simulated()].
 #'
 #' @references
 #' \insertRef{rettiganti_2012}{depower}
@@ -195,15 +208,11 @@ wald_test_bnb <- function(
   n1 <- mle_alt[["n1"]]
   n2 <- mle_alt[["n2"]]
 
-  sigma <- sqrt(
-    mle_ratio *
-      (1 + mle_ratio) *
-      (mle_mean1 + mle_mean2 + mle_dispersion) /
-      (n1 *
-        ((mle_mean1 + mle_mean2) *
-          (mle_mean1 + mle_dispersion) -
-          mle_dispersion * mle_ratio))
-  )
+  # The element for the ratio in the inverse of the Fisher information matrix in
+  # Appendix A.2 of Rettiganti and Nagaraja (2012). Do not use their Eq. (10).
+  # Eq. (10) omits the factor mean1 from the term dispersion * ratio of the
+  # denominator. With this factor, (mean1 + mean2 + dispersion) cancels.
+  sigma <- sqrt(mle_ratio * (1 + mle_ratio) / (n1 * mle_mean1))
 
   # Link functions
   linkf <- switch(

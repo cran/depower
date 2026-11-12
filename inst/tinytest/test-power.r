@@ -292,7 +292,7 @@ expect_equal(
         label = "Test"
       ),
       alpha = structure(c(0.05, 0.05), label = "Alpha"),
-      power = structure(c(0.86, 0.97), label = "Power")
+      power = structure(c(0.755, 0.96), label = "Power")
     ),
     row.names = c(NA, -2L),
     class = c("depower", "bnb", "tbl_df", "tbl", "data.frame")

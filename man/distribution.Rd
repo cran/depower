@@ -146,6 +146,13 @@ Randomization tests use the positive-biased p-value estimate in the style of
 \hat{p} = \frac{1 + \sum_{i=1}^B \mathbb{I} \{\chi^2_i \geq \chi^2_{obs}\}}{B + 1}.
 }
 
+The comparison uses a relative tolerance of \code{1e-3}.
+The function counts \eqn{\chi^2_i} when
+\eqn{\chi^2_i \geq \chi^2_{obs} (1 - 10^{-3})}.
+Numerical optimization puts small errors in the test statistics, and the
+tolerance keeps these errors from separating tied values.
+The tolerance can only increase the p-value.
+
 The number of resamples defines the minimum observable p-value
 (e.g. \code{nsims=1000L} results in min(p-value)=1/1001).
 It's recommended to set \eqn{\text{nsims} \gg \frac{1}{\alpha}}.

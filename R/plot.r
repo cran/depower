@@ -26,7 +26,7 @@
 #' ```
 #'
 #' \if{html}{\out{<div style="display: flex; justify-content: center; padding-top: 10px; padding-bottom: 10px;">
-#'   <img style="max-width: 500px; width: 100\%; height: auto;" src="figures/plot_details-1.png" alt="Example of extending plot() with ggplot2 functions" />
+#'   <img style="max-width: 500px; width: 100\%; height: auto;" src="figures/plot_details-1.png" alt="Example of extending plot() with ggplot2 functions">
 #' </div>}}
 #' \if{latex}{
 #'   \out{\begin{center}}
@@ -154,12 +154,8 @@
 #'   plot()
 #' }
 #'
-#' @importFrom dplyr filter summarize across all_of any_of select left_join
-#'                   mutate bind_cols
-#' @importFrom ggplot2 ggplot aes facet_grid geom_point geom_line labs vars
-#'                     labeller label_both scale_y_continuous scale_x_continuous
-#'                     scale_color_discrete scale_fill_discrete geom_hline
-#'                     geom_ribbon
+#' @importFrom dplyr filter summarize across all_of any_of select left_join mutate bind_cols
+#' @importFrom ggplot2 ggplot aes facet_grid geom_point geom_line labs vars labeller label_both scale_y_continuous scale_x_continuous scale_color_discrete scale_fill_discrete geom_hline geom_ribbon
 #' @importFrom scales percent
 #'
 #' @export

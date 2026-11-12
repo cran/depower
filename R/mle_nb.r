@@ -18,11 +18,10 @@
 #' and \eqn{\hat{\mu} = \bar{x}_1}. The MLEs of \eqn{\theta_1} and \eqn{\theta_2}
 #' are found by maximizing the profile log-likelihood
 #' \eqn{l(\hat{r}, \hat{\mu}, \theta_1, \theta_2)} with respect to
-#' \eqn{\theta_1} and \eqn{\theta_2}. When \eqn{r = r_{null}} is known, the MLE
-#' of \eqn{\mu} is
-#' \eqn{\tilde{\mu} = \frac{n_1 \bar{x}_1 + n_2 \bar{x}_2}{n_1 + n_2}} and
-#' \eqn{\tilde{\theta}_1} and \eqn{\tilde{\theta}_2} are obtained by maximizing
-#' the profile log-likelihood \eqn{l(r_{null}, \tilde{\mu}, \theta_1, \theta_2)}.
+#' \eqn{\theta_1} and \eqn{\theta_2}.
+#' When \eqn{r = r_{null}} is known, `mle_nb_null()` finds \eqn{\tilde{\mu}}, \eqn{\tilde{\theta}_1}, and \eqn{\tilde{\theta}_2} by maximizing \eqn{l(r_{null}, \mu, \theta_1, \theta_2)} with respect to \eqn{\mu}, \eqn{\theta_1}, and \eqn{\theta_2}.
+#' For equal dispersions and \eqn{r_{null} = 1}, the MLE of \eqn{\mu} is \eqn{\tilde{\mu} = \frac{n_1 \bar{x}_1 + n_2 \bar{x}_2}{n_1 + n_2}}.
+#' In other cases, \eqn{\tilde{\mu}} depends on the dispersion parameters.
 #'
 #' The backend method for numerical optimization is controlled by argument
 #' `method` which refers to [stats::nlm()], [stats::nlminb()], or
@@ -164,14 +163,14 @@ mle_nb_null <- function(
     # dispersion = (mean * p) / (1 - p)
     # Var(X) = mean + mean^2/dispersion
     init_dispersion <- 2
-    param = c(mean1 = init_mean1, dispersion = init_dispersion)
+    param <- c(mean1 = init_mean1, dispersion = init_dispersion)
     nparams <- 2L
   } else {
     # dispersion = (mean * p) / (1 - p)
     # Var(X) = mean + mean^2/dispersion
     init_dispersion1 <- 2
     init_dispersion2 <- 2
-    param = c(
+    param <- c(
       mean1 = init_mean1,
       dispersion1 = init_dispersion1,
       dispersion2 = init_dispersion2
@@ -268,7 +267,7 @@ mle_nb_alt <- function(
     # dispersion = (mean * p) / (1 - p)
     # Var(X) = mean + mean^2/dispersion
     init_dispersion <- 2
-    param = c(
+    param <- c(
       mean1 = init_mean1,
       mean2 = init_mean2,
       dispersion = init_dispersion
@@ -279,7 +278,7 @@ mle_nb_alt <- function(
     # Var(X) = mean + mean^2/dispersion
     init_dispersion1 <- 2
     init_dispersion2 <- 2
-    param = c(
+    param <- c(
       mean1 = init_mean1,
       mean2 = init_mean2,
       dispersion1 = init_dispersion1,
@@ -306,9 +305,9 @@ mle_nb_alt <- function(
   #-----------------------------------------------------------------------------
   details <- "Alternative hypothesis MLEs for independent negative binomial data"
 
-  mean1 = as.numeric(mle[["estimate"]][1L])
-  mean2 = as.numeric(mle[["estimate"]][2L])
-  ratio = mean2 / mean1
+  mean1 <- as.numeric(mle[["estimate"]][1L])
+  mean2 <- as.numeric(mle[["estimate"]][2L])
+  ratio <- mean2 / mean1
 
   if (equal_dispersion) {
     dispersion1 <- mle[["estimate"]][3L]

@@ -6,7 +6,7 @@
 \alias{depower-package}
 \title{depower: Power Analysis for Differential Expression Studies}
 \description{
-Provides a convenient framework to simulate, test, power, and visualize data for differential expression studies with lognormal or negative binomial outcomes. Supported designs are two-sample comparisons of independent or dependent outcomes. Power may be summarized in the context of controlling the per-family error rate or family-wise error rate. Negative binomial methods are described in Yu, Fernandez, and Brock (2017) \doi{10.1186/s12859-017-1648-2} and Yu, Fernandez, and Brock (2020) \doi{10.1186/s12859-020-3541-7}.
+Provides a convenient framework to simulate data, run hypothesis tests, estimate power, and plot the results for differential expression studies. The simulation-based framework is described in Klamer and Yu (2026) \doi{10.1177/11769351261431247}. Outcomes may be lognormal, negative binomial, or bivariate negative binomial. Supported designs are one-sample, independent two-sample, and dependent two-sample comparisons. Built-in tests include t-tests, Wald tests, and likelihood ratio tests. User-defined tests are also accepted. The significance level can be set to control the per-family error rate or the family-wise error rate. Negative binomial methods are described in Yu, Fernandez, and Brock (2017) \doi{10.1186/s12859-017-1648-2} and Yu, Fernandez, and Brock (2020) \doi{10.1186/s12859-020-3541-7}.
 }
 \seealso{
 Useful links:
@@ -21,6 +21,7 @@ Useful links:
 
 Authors:
 \itemize{
+  \item Brett Klamer \email{code@brettklamer.com} (\href{https://orcid.org/0000-0002-8334-4831}{ORCID})
   \item Lianbo Yu \email{lianbo.yu@osumc.edu} (\href{https://orcid.org/0000-0002-2025-2585}{ORCID})
 }
 

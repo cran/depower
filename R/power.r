@@ -130,12 +130,8 @@
 #'
 #' The final number of valid simulations per unique set of simulation parameters
 #' may be less than the original number requested. This may occur when the test
-#' results in a missing p-value. For `wald_test_bnb()`, pathological MLE
-#' estimates, generally from small sample sizes and very small dispersions, may
-#' result in a negative estimated standard deviation of the ratio. Thus the test
-#' statistic and p-value would not be calculated. Note that simulated data from
-#' `sim_nb()` and `sim_bnb()` may also reduce `nsims` during the data simulation
-#' phase.
+#' results in a missing p-value. Note that simulated data from `sim_nb()` and
+#' `sim_bnb()` may also reduce `nsims` during the data simulation phase.
 #'
 #' `nsims` denotes the effective number of simulated datasets under the alternative hypothesis, resulting in the equivalent number of hypothesis tests performed used to calculate power.
 #' If `nsims` is too small, the power estimate will have high uncertainty (wide confidence/prediction intervals).
@@ -147,6 +143,8 @@
 #' When the prediction intervals from [eval_power_pi()] are too wide, consider choosing a larger `nsims` before running a power simulation.
 #'
 #' @references
+#' \insertRef{klamer_2026}{depower}
+#'
 #' \insertRef{yu_2017}{depower}
 #'
 #' \insertRef{yu_2020}{depower}
@@ -486,7 +484,7 @@ power.log_lognormal_mixed_two_sample <- function(
       FUN.VALUE = character(1),
       USE.NAMES = FALSE
     )
-    if (any(!fun_deparse %in% c("t_test_welch", "t_test_paired"))) {
+    if (!all(fun_deparse %in% c("t_test_welch", "t_test_paired"))) {
       stop(
         "Argument '...' must only use t_test_welch() and t_test_paired() for mixed-type data. See ?depower::power()."
       )

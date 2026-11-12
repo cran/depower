@@ -2,11 +2,15 @@
 
 ## Overview
 
-depower provides a convenient framework to simulate, test, power, and
-visualize data for differential expression studies with lognormal or
-negative binomial outcomes. Supported designs are two-sample comparisons
-of both independent and dependent outcomes. Power may be summarized in
-the context of controlling the per-family error rate or family-wise
+depower simulates data, runs hypothesis tests, estimates power, and
+plots the results for differential expression studies. The
+simulation-based framework is described in [Klamer and Yu
+(2026)](https://doi.org/10.1177/11769351261431247). Outcomes may be
+lognormal, negative binomial, or bivariate negative binomial. Supported
+designs are one-sample, independent two-sample, and dependent two-sample
+comparisons. Built-in tests include t-tests, Wald tests, and likelihood
+ratio tests. User-defined tests are also accepted. The significance
+level can be set to control the per-family error rate or the family-wise
 error rate.
 
 ## Installation
@@ -72,7 +76,7 @@ power_bnb
 #> # A tibble: 2 × 11
 #>      n1    n2 mean1 mean2 ratio dispersion1 distribution        nsims test  alpha power
 #>   <dbl> <dbl> <dbl> <dbl> <dbl>       <dbl> <chr>               <dbl> <chr> <dbl> <dbl>
-#> 1    30    30    15  18     1.2           1 Dependent two-samp…   300 BNB …  0.05 0.833
+#> 1    30    30    15  18     1.2           1 Dependent two-samp…   300 BNB …  0.05 0.823
 #> 2    30    30    15  19.5   1.3           1 Dependent two-samp…   300 BNB …  0.05 0.987
 
 plot(power_bnb)

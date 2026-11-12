@@ -101,11 +101,10 @@ The MLEs of \eqn{r} and \eqn{\mu} are \eqn{\hat{r} = \frac{\bar{x}_2}{\bar{x}_1}
 and \eqn{\hat{\mu} = \bar{x}_1}. The MLEs of \eqn{\theta_1} and \eqn{\theta_2}
 are found by maximizing the profile log-likelihood
 \eqn{l(\hat{r}, \hat{\mu}, \theta_1, \theta_2)} with respect to
-\eqn{\theta_1} and \eqn{\theta_2}. When \eqn{r = r_{null}} is known, the MLE
-of \eqn{\mu} is
-\eqn{\tilde{\mu} = \frac{n_1 \bar{x}_1 + n_2 \bar{x}_2}{n_1 + n_2}} and
-\eqn{\tilde{\theta}_1} and \eqn{\tilde{\theta}_2} are obtained by maximizing
-the profile log-likelihood \eqn{l(r_{null}, \tilde{\mu}, \theta_1, \theta_2)}.
+\eqn{\theta_1} and \eqn{\theta_2}.
+When \eqn{r = r_{null}} is known, \code{mle_nb_null()} finds \eqn{\tilde{\mu}}, \eqn{\tilde{\theta}_1}, and \eqn{\tilde{\theta}_2} by maximizing \eqn{l(r_{null}, \mu, \theta_1, \theta_2)} with respect to \eqn{\mu}, \eqn{\theta_1}, and \eqn{\theta_2}.
+For equal dispersions and \eqn{r_{null} = 1}, the MLE of \eqn{\mu} is \eqn{\tilde{\mu} = \frac{n_1 \bar{x}_1 + n_2 \bar{x}_2}{n_1 + n_2}}.
+In other cases, \eqn{\tilde{\mu}} depends on the dispersion parameters.
 
 The backend method for numerical optimization is controlled by argument
 \code{method} which refers to \code{\link[stats:nlm]{stats::nlm()}}, \code{\link[stats:nlminb]{stats::nlminb()}}, or
